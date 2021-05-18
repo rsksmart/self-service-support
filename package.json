@@ -21,5 +21,8 @@
   "bugs": {
     "url": "https://github.com/bguiz/rsk-token-bridge-support/issues"
   },
-  "homepage": "https://github.com/bguiz/rsk-token-bridge-support#readme"
+  "homepage": "https://github.com/bguiz/rsk-token-bridge-support#readme",
+  "dependencies": {
+    "express": "4.17.1"
+  }
 }
