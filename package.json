@@ -1,0 +1,25 @@
+{
+  "name": "rsk-token-bridge-support",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Self-service support tool for RSK Token Bridge",
+  "main": "run.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bguiz/rsk-token-bridge-support.git"
+  },
+  "keywords": [
+    "rsk",
+    "bridge",
+    "support"
+  ],
+  "author": "bguiz",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/bguiz/rsk-token-bridge-support/issues"
+  },
+  "homepage": "https://github.com/bguiz/rsk-token-bridge-support#readme"
+}
