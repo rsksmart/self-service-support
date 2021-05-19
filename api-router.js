@@ -1,6 +1,7 @@
 const express = require('express');
 
 const calcTxAge = require('./util/calc-tx-age.js');
+const rskTokenBridgeController = require('./rsk-token-bridge-controller.js');
 
 const router = express.Router();
 
@@ -66,9 +67,16 @@ router.get('/:product/options', async (req, res) => {
     });
     return;
   }
+
+  // now we have the necessary information:
+  // transaction age, the from network, and the wallet used
+  // we can use this to filter the set of support responses relevant to them
+  const options = rskTokenBridgeController.getOptions(fromNetwork, txHash, walletName, txAge);
+
   res.status(200).json({
     message: 'ok',
     value: [fromNetwork, txHash, walletName, txAge],
+    options,
   });
 });
 
