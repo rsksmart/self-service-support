@@ -1,0 +1,62 @@
+[
+  {
+    "fromNetwork": "eth-mainnet",
+    "txAge": { "lte": 5760 },
+    "walletName": "*",
+    "options": ["eth-to-rsk-patience"]
+  },
+  {
+    "fromNetwork": "eth-mainnet",
+    "txAge": { "gt": 5760 },
+    "walletName": "*",
+    "options": ["eth-to-rsk-patience-support"]
+  },
+  {
+    "fromNetwork": "rsk-mainnet",
+    "txAge": { "lte": 2880 },
+    "walletName": "*",
+    "options": ["rsk-to-eth-patience"]
+  },
+  {
+    "fromNetwork": "rsk-mainnet",
+    "txAge": { "gt": 2880 },
+    "walletName": "*",
+    "options": ["rsk-to-eth-patience-support"]
+  },
+  {
+    "fromNetwork": "ethereum-mainnet",
+    "txAge": "*",
+    "walletName": "liquality",
+    "options": ["eth-to-rsk-liquality"]
+  },
+  {
+    "fromNetwork": "rsk-mainnet",
+    "txAge": "*",
+    "walletName": "liquality",
+    "options": ["rsk-to-eth-liquality"]
+  },
+  {
+    "fromNetwork": "ethereum-mainnet",
+    "txAge": "*",
+    "walletName": "nifty",
+    "options": ["eth-to-rsk-nifty"]
+  },
+  {
+    "fromNetwork": "rsk-mainnet",
+    "txAge": "*",
+    "walletName": "nifty",
+    "options": ["rsk-to-eth-nifty"]
+  },
+  {
+    "fromNetwork": "ethereum-mainnet",
+    "txAge": "*",
+    "walletName": "metamask",
+    "options": ["eth-to-rsk-metamask-timeout"]
+  },
+  {
+    "fromNetwork": "*",
+    "txAge": "*",
+    "walletName": "*",
+    "options": ["patience", "address-choice", "tx-history"]
+  }
+]
