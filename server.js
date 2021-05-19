@@ -1,8 +1,19 @@
 const express = require('express');
+const cors = require('cors');
 
 const apiRouter = require('./api-router.js');
 
 const server = express();
+
+var corsOptions = {
+  origin: [
+    'https://rsk.co',
+    /\.rsk\.co$/,
+  ],
+  optionsSuccessStatus: 200,
+}
+
+server.use(cors(corsOptions));
 
 server.use('/api/v1', apiRouter);
 
