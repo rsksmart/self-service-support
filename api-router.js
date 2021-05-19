@@ -7,7 +7,7 @@ router.use(function (req, res, next) {
   next();
 });
 
-router.get('/:product/options', function (req, res) {
+router.get('/:product/options', async (req, res) => {
   console.log('Inside route');
   const productName = req.params.product;
   if (productName !== 'rsk-token-bridge') {
@@ -22,6 +22,26 @@ router.get('/:product/options', function (req, res) {
     txHash,
     walletName,
   } = req.query;
+  let queryErrors = [];
+  if (typeof fromNetwork !== 'string' ||
+    ['rsk', 'ethereum'].indexOf(fromNetwork) < 0) {
+    queryErrors.push('invalid fromNetwork: ' + fromNetwork);
+  }
+  if (typeof txHash !== 'string' ||
+    !txHash.startsWith('0x')) {
+    queryErrors.push('invalid txHash: '+ txHash);
+  }
+  if (typeof walletName !== 'string' ||
+    ['metamask', 'nifty', 'liquality'].indexOf(walletName) < 0) {
+    queryErrors.push('invalid walletName: ' + walletName);
+  }
+  if (queryErrors.length > 0) {
+    res.status(400).json({
+      error: 'invalid inputs',
+      value: queryErrors,
+    });
+    return;
+  }
   res.status(200).json({
     message: 'ok',
     value: [fromNetwork, txHash, walletName],

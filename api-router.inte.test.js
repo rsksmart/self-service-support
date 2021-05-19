@@ -21,7 +21,29 @@ test('GET /api/v1/bogus-product-name/options', function (t) {
     });
 });
 
-test('GET /api/v1/rsk-token-bridge/options with query params', function (t) {
+test('GET /api/v1/rsk-token-bridge/options with invalid query params', function (t) {
+  request(server)
+    .get('/api/v1/rsk-token-bridge/options?fromNetwork=another+chain&txHash=12345&walletName=beep+boop')
+    .expect(400)
+    .expect('Content-Type', /json/)
+    .end(function (err, res) {
+      t.error(err, 'Detect query params');
+      var bodyActual = res.body;
+      var bodyExpected = {
+        error: 'invalid inputs',
+        value: [
+          'invalid fromNetwork: another chain',
+          'invalid txHash: 12345',
+          'invalid walletName: beep boop',
+        ],
+      };
+      t.deepEqual(bodyActual, bodyExpected,
+        'Response values expected');
+      t.end();
+    });
+});
+
+test('GET /api/v1/rsk-token-bridge/options with valid query params', function (t) {
   request(server)
     .get('/api/v1/rsk-token-bridge/options?fromNetwork=rsk&txHash=0x00&walletName=metamask')
     .expect(200)
