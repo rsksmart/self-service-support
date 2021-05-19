@@ -1,5 +1,7 @@
 const express = require('express');
 
+const calcTxAge = require('./util/calc-tx-age.js');
+
 const router = express.Router();
 
 router.use(function (req, res, next) {
@@ -7,8 +9,20 @@ router.use(function (req, res, next) {
   next();
 });
 
+const allowedFromNetworks = [
+  'rsk-mainnet',
+  'rsk-testnet',
+  'ethereum-mainnet',
+  'ethereum-kovan',
+];
+
+const allowedWalletNames = [
+  'metamask',
+  'nifty',
+  'liquality',
+];
+
 router.get('/:product/options', async (req, res) => {
-  console.log('Inside route');
   const productName = req.params.product;
   if (productName !== 'rsk-token-bridge') {
     res.status(400).json({
@@ -24,7 +38,7 @@ router.get('/:product/options', async (req, res) => {
   } = req.query;
   let queryErrors = [];
   if (typeof fromNetwork !== 'string' ||
-    ['rsk', 'ethereum'].indexOf(fromNetwork) < 0) {
+    allowedFromNetworks.indexOf(fromNetwork) < 0) {
     queryErrors.push('invalid fromNetwork: ' + fromNetwork);
   }
   if (typeof txHash !== 'string' ||
@@ -32,7 +46,7 @@ router.get('/:product/options', async (req, res) => {
     queryErrors.push('invalid txHash: '+ txHash);
   }
   if (typeof walletName !== 'string' ||
-    ['metamask', 'nifty', 'liquality'].indexOf(walletName) < 0) {
+    allowedWalletNames.indexOf(walletName) < 0) {
     queryErrors.push('invalid walletName: ' + walletName);
   }
   if (queryErrors.length > 0) {
@@ -42,9 +56,19 @@ router.get('/:product/options', async (req, res) => {
     });
     return;
   }
+  let txAge = 0;
+  try {
+    txAge = await calcTxAge(fromNetwork, txHash);
+  } catch (ex) {
+    res.status(400).json({
+      error: 'unable to calculate tx age',
+      value: [ex.message],
+    });
+    return;
+  }
   res.status(200).json({
     message: 'ok',
-    value: [fromNetwork, txHash, walletName],
+    value: [fromNetwork, txHash, walletName, txAge],
   });
 });
 

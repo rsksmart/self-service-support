@@ -45,7 +45,7 @@ test('GET /api/v1/rsk-token-bridge/options with invalid query params', function 
 
 test('GET /api/v1/rsk-token-bridge/options with valid query params', function (t) {
   request(server)
-    .get('/api/v1/rsk-token-bridge/options?fromNetwork=rsk&txHash=0x00&walletName=metamask')
+    .get('/api/v1/rsk-token-bridge/options?fromNetwork=rsk-testnet&txHash=0xf1ebb8076ad289fbaef4406bb0488be0c5605a58cfa2a6d11540b1f9b0d7ef98&walletName=metamask')
     .expect(200)
     .expect('Content-Type', /json/)
     .end(function (err, res) {
@@ -53,10 +53,11 @@ test('GET /api/v1/rsk-token-bridge/options with valid query params', function (t
       var bodyActual = res.body;
       var bodyExpected = {
         message: 'ok',
-        value: ['rsk', '0x00', 'metamask'],
+        value: ['rsk-testnet', '0xf1ebb8076ad289fbaef4406bb0488be0c5605a58cfa2a6d11540b1f9b0d7ef98', 'metamask'],
       };
-      t.deepEqual(bodyActual, bodyExpected,
-        'Response values expected');
+      t.equal(bodyActual.message, bodyExpected.message);
+      t.deepEqual(bodyActual.value.slice(0, 3), bodyExpected.value.slice(0, 3));
+      t.ok(typeof bodyActual.value[3] === 'number');
       t.end();
     });
 });

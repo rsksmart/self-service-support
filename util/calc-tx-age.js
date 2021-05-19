@@ -22,9 +22,6 @@ async function calcTxAge(network, txHash) {
 
   const [getTransactionByHashResponse, blockNumberResponse] =
     await Promise.all([getTransactionByHashRpc, blockNumberRpc]);
-  console.log({
-    txByHash: getTransactionByHashResponse.data,
-  });
 
   if (!getTransactionByHashResponse.data.result) {
     throw new Error(`Transaction does not exist or hash is invalid: ${txHash}`);
