@@ -1,0 +1,43 @@
+<html>
+  <head>
+    <title>
+      RSK Token Bridge - Self-service Support
+    </title>
+  </head>
+  <body>
+    <h1>
+      RSK Token Bridge - Self-service Support
+    </h1>
+    <div class="input-area">
+      <div>
+        <label>Transaction Hash</label>
+        <br />
+        <input name="txHash" id="txHash" type="text"></input>
+      </div>
+      <div>
+        <label>Crossing from</label>
+        <br />
+        <select name="fromNetwork" id="fromNetwork">
+          <option value="ethereum-mainnet">Ethereum to RSK</option>
+          <option value="rsk-mainnet">RSK to Etherteum</option>
+        </select>
+      </div>
+      <div>
+        <label>Wallet</label>
+        <br />
+        <select name="walletName" id="walletName">
+          <option value="metamask">MetaMask</option>
+          <option value="nifty">Nifty</option>
+          <option value="liquality">Liquality</option>
+        </select>
+      </div>
+      <div>
+        <button id="check">Check &hellip;</button>
+      </div>
+    </div>
+    <div class="output-area">
+    </div>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="index.js"></script>
+  <body>
+</html>
