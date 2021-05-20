@@ -1,8 +1,8 @@
 {
-  "name": "rsk-token-bridge-support",
+  "name": "support-server",
   "version": "0.0.0",
   "private": true,
-  "description": "Self-service support tool for RSK Token Bridge",
+  "description": "Self-service support server",
   "main": "run.js",
   "scripts": {
     "start": "node run.js",
@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bguiz/rsk-token-bridge-support.git"
+    "url": "git+https://github.com/bguiz/self-service-support.git"
   },
   "keywords": [
     "rsk",
