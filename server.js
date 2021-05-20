@@ -17,6 +17,12 @@ var corsOptions = {
 
 server.use(cors(corsOptions));
 
+server.get('/api/status', (req, res) => {
+  res.send({
+    ok: Date.now(),
+  });
+});
+
 server.use('/api/v1', apiRouter);
 
 server.use(express.static(__dirname + '/static'));
