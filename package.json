@@ -5,6 +5,7 @@
   "description": "Self-service support tool for RSK Token Bridge",
   "main": "run.js",
   "scripts": {
+    "start": "node run.js",
     "test": "node run.inte.test.js"
   },
   "repository": {
