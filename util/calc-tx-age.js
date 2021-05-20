@@ -1,8 +1,12 @@
 const axios = require('axios');
 
+const infuraProjectId = process.env.INFURA_PROJECT_ID || '';
+
 const rpcUrls = {
   'rsk-mainnet': 'https://public-node.rsk.co/',
   'rsk-testnet': 'https://public-node.testnet.rsk.co/',
+  'ethereum-mainnet': `https://mainnet.infura.io/v3/${infuraProjectId}`,
+  'ethereum-kovan': `https://kovan.infura.io/v3/${infuraProjectId}`,
 };
 
 async function calcTxAge(network, txHash) {

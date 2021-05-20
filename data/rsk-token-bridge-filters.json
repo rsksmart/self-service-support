@@ -1,12 +1,12 @@
 [
   {
-    "fromNetwork": "eth-mainnet",
+    "fromNetwork": "ethereum-mainnet",
     "txAge": { "lte": 5760 },
     "walletName": "*",
     "options": ["eth-to-rsk-patience"]
   },
   {
-    "fromNetwork": "eth-mainnet",
+    "fromNetwork": "ethereum-mainnet",
     "txAge": { "gt": 5760 },
     "walletName": "*",
     "options": ["eth-to-rsk-patience-support"]

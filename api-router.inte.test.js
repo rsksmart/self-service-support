@@ -62,7 +62,7 @@ test('GET /api/v1/rsk-token-bridge/options with valid query params', function (t
     });
 });
 
-test('GET /api/v1/rsk-token-bridge/options with valid query params', function (t) {
+test('GET /api/v1/rsk-token-bridge/options with valid query params (rsk)', function (t) {
   request(server)
     .get('/api/v1/rsk-token-bridge/options?fromNetwork=rsk-mainnet&txHash=0x573c70270258ce99acfc2baaa306fcdc88b1e50c3144d26a8ab74a2f21ea442a&walletName=nifty')
     .expect(200)
@@ -73,6 +73,26 @@ test('GET /api/v1/rsk-token-bridge/options with valid query params', function (t
       var bodyExpected = {
         message: 'ok',
         value: ['rsk-mainnet', '0x573c70270258ce99acfc2baaa306fcdc88b1e50c3144d26a8ab74a2f21ea442a', 'nifty'],
+      };
+      t.equal(bodyActual.message, bodyExpected.message);
+      t.deepEqual(bodyActual.value.slice(0, 3), bodyExpected.value.slice(0, 3));
+      t.ok(typeof bodyActual.value[3] === 'number');
+      t.equal(bodyActual.options.length, 5, 'contains a number of options in the result');
+      t.end();
+    });
+});
+
+test('GET /api/v1/rsk-token-bridge/options with valid query params (ethereum)', function (t) {
+  request(server)
+    .get('/api/v1/rsk-token-bridge/options?fromNetwork=ethereum-mainnet&txHash=0x3985fe2ad509a4588501494a715957506f401364112bd55090529686aa538962&walletName=metamask')
+    .expect(200)
+    .expect('Content-Type', /json/)
+    .end(function (err, res) {
+      t.error(err, 'Detect query params');
+      var bodyActual = res.body;
+      var bodyExpected = {
+        message: 'ok',
+        value: ['ethereum-mainnet', '0x3985fe2ad509a4588501494a715957506f401364112bd55090529686aa538962', 'metamask'],
       };
       t.equal(bodyActual.message, bodyExpected.message);
       t.deepEqual(bodyActual.value.slice(0, 3), bodyExpected.value.slice(0, 3));
