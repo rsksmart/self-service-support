@@ -5,17 +5,25 @@ const rskTokenBridgeFilters = require('./data/rsk-token-bridge-filters.json');
 const rskTokenBridgeOptions = require('./data/rsk-token-bridge-options.json');
 const { render } = require('./server.js');
 
-function getFilters(fromNetwork, txHash, walletName, txAge) {
-  const params = {
+function getFilters(params) {
+  const {
+    fromNetwork,
+    walletName,
+    txAge,
+  } = params;
+
+  // select subset of params that are used in filters,
+  // ignore the rest that may be present for use in other functions
+  const paramsToFilterBy = {
     fromNetwork,
     walletName,
     txAge,
   };
-  return filterByParams(rskTokenBridgeFilters, params);
+  return filterByParams(rskTokenBridgeFilters, paramsToFilterBy);
 }
 
-function getOptions(fromNetwork, txHash, walletName, txAge) {
-  const filters = getFilters(fromNetwork, txHash, walletName, txAge);
+function getOptions(params) {
+  const filters = getFilters(params);
   const optionIds = new Set();
   filters.forEach((filter) => {
     filter.options.forEach((filterOption) => {
@@ -30,14 +38,8 @@ function getOptions(fromNetwork, txHash, walletName, txAge) {
   return options;
 }
 
-function getOptionsRendered(fromNetwork, txHash, walletName, txAge) {
-  const params = {
-    fromNetwork,
-    txHash,
-    walletName,
-    txAge,
-  };
-  const options = getOptions(fromNetwork, txHash, walletName, txAge);
+function getOptionsRendered(params) {
+  const options = getOptions(params);
   const substitutions = stringSubstitute.getSubstitutions(params);
   const renderedOptions = options.map((option) => {
     const { question, answer } = option;
