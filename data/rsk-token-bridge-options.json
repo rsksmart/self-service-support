@@ -1,50 +1,50 @@
 {
   "eth-to-rsk-patience": {
     "question": "Transferred tokens from Ethereum, and after 24 hours have not received tokens on RSK",
-    "answer": "24 hours is an approximation, it is not fixed. Wait until 5760 blocks have past since the transaction block number, plus 5 minutes."
+    "answer": "24 hours is an approximation, it is not exact.\nWait until `5760` blocks have been confirmed since the transaction block number, plus 5 minutes.\nYour transaction `${txHash}` currently has only waited for `${txAge}` blocks."
   },
   "eth-to-rsk-patience-support": {
     "question": "Transferred tokens from Ethereum, and after 24 hours have not received tokens on RSK",
-    "answer": "Look in https://explorer.rsk.co/ at the SAME ADDRESS on RSK. If you do not see the correct balance in the tokens tab, please share your Transaction Hash in the #tokenbridge channel on RSK Open slack (go to https://developers.rsk.co/slack to join)."
+    "answer": "Look at the **same address** on an RSK block explorer:\n[`${txFrom}`](https://explorer.rsk.co/address/${txFrom}?__tab=tokens).\nIf you do not see the correct balance in the tokens tab, please share your transaction hash in the *#tokenbridge* channel on RSK Open slack (go to [developers.rsk.co/slack](https://developers.rsk.co/slack/) to join)."
   },
   "rsk-to-eth-patience": {
     "question": "Transferred tokens from RSK, and after 24 hours have not received tokens on Ethereum",
-    "answer": "24 hours is an approximation, it is not fixed. Wait until 5760 blocks have past since the transaction block number, plus 5 minutes."
+    "answer": "24 hours is an approximation, it is not exact.\nWait until `2880` blocks have been confirmed since the transaction block number, plus 5 minutes.\nYour transaction `${txHash}` currently has only waited for `${txAge}` blocks."
   },
   "rsk-to-eth-patience-support": {
     "question": "Transferred tokens from RSK, and after 24 hours have not received tokens on Ethereum",
-    "answer": "Look in https://etherscan.io/ at the SAME ADDRESS on RSK. If you do not see the correct balance in the tokens tab, please share your Transaction Hash in the #tokenbridge channel on RSK Open slack (go to https://developers.rsk.co/slack to join)."
+    "answer": "Look at the **same address** on an Ethereum block explorer:\n[`${txFrom}`](https://etherscan.io/address/${txFrom}#tokentxns).\nIf you do not see the correct balance in the tokens tab, please share your transaction hash in the *#tokenbridge* channel on RSK Open slack (go to [developers.rsk.co/slack](https://developers.rsk.co/slack/) to join)."
   },
   "eth-to-rsk-liquality": {
     "question": "Transferred tokens from Ethereum to RSK, but do not see them in Liquality",
-    "answer": "RSK has a different derivation path (m/44’/137’/0’/0) from Ethereum (m/44’/60’/0’/0). Liquality respects this convention. Copy your mnemonic or private key and use Metamask and add RSK as custom network, to get the same address as ethereum."
+    "answer": "RSK has a different derivation path (`m/44'/137'/0'/0`) from Ethereum (`m/44'/60'/0'/0`).\nLiquality respects this convention.\nCopy your mnemonic or private key and use Metamask and add RSK as custom network, to get the same address as ethereum."
   },
   "rsk-to-eth-liquality": {
     "question": "Transferred tokens from RSK to Ethereum, but do not see them in Liquality",
-    "answer": "RSK has a different derivation path (m/44’/137’/0’/0) from Ethereum (m/44’/60’/0’/0). Liquality respects this convention. Copy your mnemonic or private key and use My Ether Wallet or My Crypto with the RSK derivation path m/44’/137’/0’/0 to get the same address as RSK."
+    "answer": "RSK has a different derivation path (m/44'/137'/0'/0) from Ethereum (m/44'/60'/0'/0). Liquality respects this convention. Copy your mnemonic or private key and use My Ether Wallet or My Crypto with the RSK derivation path m/44'/137'/0'/0 to get the same address as RSK."
   },
   "eth-to-rsk-nifty": {
     "question": "Transferred tokens from Ethereum to RSK, but do not see them in Nifty",
-    "answer": "RSK has a different derivation path (m/44’/137’/0’/0) from Ethereum (m/44’/60’/0’/0). Nifty respects this convention. In Nifty, add RSK as Custom RPC, to get the same address as ethereum, see: https://developers.rsk.co/tutorials/resolve-nifty-issue/"
+    "answer": "RSK has a different derivation path (`m/44'/137'/0'/0`) from Ethereum (`m/44'/60'/0'/0`). Nifty respects this convention. In Nifty, add RSK as Custom RPC, to get the same address as ethereum, see: https://developers.rsk.co/tutorials/resolve-nifty-issue/"
   },
   "rsk-to-eth-nifty": {
     "question": "Transferred tokens from RSK to Ethereum, but do not see them in Nifty",
-    "answer": "RSK has a different derivation path (m/44’/137’/0’/0) from Ethereum (m/44’/60’/0’/0). Nifty respects this convention. Copy your mnemonic or private key and use My Ether Wallet or My Crypto with the RSK derivation path m/44’/137’/0’/0 to get the same address as RSK."
+    "answer": "RSK has a different derivation path (`m/44'/137'/0'/0`) from Ethereum (`m/44'/60'/0'/0`).\nNifty respects this convention.\nCopy your mnemonic or private key and use My Ether Wallet or My Crypto with the RSK derivation path (`m/44'/137'/0'/0`) to get the same address as RSK."
   },
   "eth-to-rsk-metamask-timeout": {
     "question": "Metamask threw an error",
-    "answer": "This is usually a timeout as the Transaction was not mined on the time expected by Metamask. This does not mean that transaction has not been mined. Please share your Transaction Hash in the #tokenbridge channel on RSK Open slack (go to https://developers.rsk.co/slack to join)."
+    "answer": "This is usually a timeout as the Transaction was not mined on the time expected by Metamask.\nThis does not mean that transaction has not been mined.\nPlease share your transaction hash in the *#tokenbridge* channel on RSK Open slack (go to [developers.rsk.co/slack](https://developers.rsk.co/slack/) to join)."
   },
   "patience": {
     "question": "Why does it take 24 hours? Can it be faster?",
-    "answer": "This is for security measures. 24 hours is an approximation, it is not exact. We are working to reduce this time in the next version."
+    "answer": "This is a security measure.\n24 hours is an approximation, it is not exact.\nWe are working to reduce this time in the next version."
   },
   "address-choice": {
     "question": "Why can't I choose the address?",
-    "answer": "Currently it uses the token bridge always sends tokens to the same address on the other blockchain network, and so the sender and the receiver will always have the same address. You will have the option to send to another address in the next version."
+    "answer": "Currently it uses the token bridge always sends tokens to the same address on the other blockchain network, and so the sender and the receiver will always have the same address.\nYou will have the option to send to another address in the next version."
   },
   "tx-history": {
     "question": "I don't see my transaction on the Token Bridge list",
-    "answer": "The list is stored in local cache, so it’s not shared across devices, and its erased if you clear your browser cookies and temporary files. You can be sure than if the transaction is mined the tokens will cross no matter what the list says. If this is not the reason why it is not there please let us know in the #tokenbridge channel on RSK Open slack (go to https://developers.rsk.co/slack to join)."
+    "answer": "The list is stored in local cache, so it's not shared across devices, and its erased if you clear your browser cookies and temporary files.\nYou can be sure than if the transaction is mined the tokens will cross no matter what the list says.\nIf this is not the reason why it is not there please let us know in the *#tokenbridge* channel on RSK Open slack (go to [developers.rsk.co/slack](https://developers.rsk.co/slack/) to join)."
   }
 }
