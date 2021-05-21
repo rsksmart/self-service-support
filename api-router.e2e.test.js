@@ -6,6 +6,7 @@ const server = require('./server.js');
 test('GET /api/v1/bogus-product-name/options', function (t) {
   request(server)
     .get('/api/v1/bogus-product-name/options')
+    .set({ 'Accept': 'application/json' })
     .expect(400)
     .expect('Content-Type', /json/)
     .end(function (err, res) {
@@ -24,6 +25,7 @@ test('GET /api/v1/bogus-product-name/options', function (t) {
 test('GET /api/v1/rsk-token-bridge/options with invalid query params', function (t) {
   request(server)
     .get('/api/v1/rsk-token-bridge/options?fromNetwork=another+chain&txHash=12345&walletName=beep+boop')
+    .set({ 'Accept': 'application/json' })
     .expect(400)
     .expect('Content-Type', /json/)
     .end(function (err, res) {
@@ -46,6 +48,7 @@ test('GET /api/v1/rsk-token-bridge/options with invalid query params', function 
 test.skip('GET /api/v1/rsk-token-bridge/options with valid query params (rsk-testnet)', function (t) {
   request(server)
     .get('/api/v1/rsk-token-bridge/options?fromNetwork=rsk-testnet&txHash=0xf1ebb8076ad289fbaef4406bb0488be0c5605a58cfa2a6d11540b1f9b0d7ef98&walletName=metamask')
+    .set({ 'Accept': 'application/json' })
     .expect(200)
     .expect('Content-Type', /json/)
     .end(function (err, res) {
@@ -73,6 +76,7 @@ test.skip('GET /api/v1/rsk-token-bridge/options with valid query params (rsk-tes
 test('GET /api/v1/rsk-token-bridge/options with valid query params (rsk-mainnet)', function (t) {
   request(server)
     .get('/api/v1/rsk-token-bridge/options?fromNetwork=rsk-mainnet&txHash=0x573c70270258ce99acfc2baaa306fcdc88b1e50c3144d26a8ab74a2f21ea442a&walletName=nifty')
+    .set({ 'Accept': 'application/json' })
     .expect(200)
     .expect('Content-Type', /json/)
     .end(function (err, res) {
@@ -100,6 +104,7 @@ test('GET /api/v1/rsk-token-bridge/options with valid query params (rsk-mainnet)
 test('GET /api/v1/rsk-token-bridge/options with valid query params (ethereum-mainnet)', function (t) {
   request(server)
     .get('/api/v1/rsk-token-bridge/options?fromNetwork=ethereum-mainnet&txHash=0x3985fe2ad509a4588501494a715957506f401364112bd55090529686aa538962&walletName=metamask')
+    .set({ 'Accept': 'application/json' })
     .expect(200)
     .expect('Content-Type', /json/)
     .end(function (err, res) {

@@ -80,10 +80,18 @@ router.get('/:product/options', async (req, res) => {
   const options =
     rskTokenBridgeController.getOptionsRendered(params);
 
-  res.status(200).json({
-    message: 'ok',
-    properties: params,
-    options,
+  res.format({
+    html: function() {
+      const htmlForOptions = rskTokenBridgeController.getOptionsHtml(options);
+      res.status(200).send(htmlForOptions);
+    },
+    default: function() {
+      res.status(200).json({
+        message: 'ok',
+        properties: params,
+        options,
+      });
+    },
   });
 });
 

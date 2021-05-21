@@ -51,8 +51,24 @@ function getOptionsRendered(params) {
   return renderedOptions;
 }
 
+function getOptionsHtml(options) {
+  const html = options
+    .map((option) => {
+      const { id, question, answer } = option;
+      return `
+      <div class="question-and-answer">
+        <h3 id="question--${id}" class="question">${question}</h3>
+        <span class="answer">${answer}</span>
+      </div>
+      `;
+    })
+    .join('\n\n');
+  return html;
+}
+
 module.exports = {
   getFilters,
   getOptions,
   getOptionsRendered,
+  getOptionsHtml,
 };
