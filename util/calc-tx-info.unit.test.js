@@ -1,20 +1,22 @@
 const test = require('tape');
 
-const calcTxAge = require('./calc-tx-age.js');
+const calcTxInfo = require('./calc-tx-info.js');
 
-test('calcTxAge with valid txHash', async function (t) {
-  const value = await calcTxAge(
+test('calcTxInfo with valid txHash', async function (t) {
+  const actualResult = await calcTxInfo(
     'rsk-testnet',
     '0xf1ebb8076ad289fbaef4406bb0488be0c5605a58cfa2a6d11540b1f9b0d7ef98',
   );
-  t.ok(value > 282937,
+  t.equal(actualResult.tx.from, '0xd761cc1ceb991631d431f6dde54f07828f2e61d2',
+    'tx from match');
+  t.ok(actualResult.meta.txAge > 282937,
     'This transaction is at least 282937 blocks old');
   t.end();
 });
 
-test('calcTxAge with invalid txHash', async function (t) {
+test('calcTxInfo with invalid txHash', async function (t) {
   try {
-    await await calcTxAge(
+    await await calcTxInfo(
       'rsk-testnet',
       '0x000000006ad289fbaef4406bb0488be0c5605a58cfa2a6d11540b1f9b0d7ef98',
     );
