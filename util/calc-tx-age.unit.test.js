@@ -22,7 +22,7 @@ test('calcTxAge with invalid txHash', async function (t) {
   } catch (ex) {
     t.match(
       ex.message,
-      /^Error: Transaction does not exist or hash is invalid: 0x000000006ad289fbaef4406bb0488be0c5605a58cfa2a6d11540b1f9b0d7ef98$/,
+      /^Transaction does not exist or hash is invalid: 0x000000006ad289fbaef4406bb0488be0c5605a58cfa2a6d11540b1f9b0d7ef98$/,
       'error message when tx does not exist',
     );
   };
