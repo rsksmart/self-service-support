@@ -1,9 +1,12 @@
+const markdownIt = require('markdown-it');
+
 const filterByParams = require('./util/filter-by-params.js');
 const stringSubstitute = require('./util/string-substitute.js');
 
 const rskTokenBridgeFilters = require('./data/rsk-token-bridge-filters.json');
 const rskTokenBridgeOptions = require('./data/rsk-token-bridge-options.json');
-const { render } = require('./server.js');
+
+const markdownItInstance = markdownIt();
 
 function getFilters(params) {
   const {
@@ -55,10 +58,12 @@ function getOptionsHtml(options) {
   const html = options
     .map((option) => {
       const { id, question, answer } = option;
+      const questionHtml = markdownItInstance.render(question);
+      const answerHtml = markdownItInstance.render(answer);
       return `
       <div class="question-and-answer">
-        <h3 id="question--${id}" class="question">${question}</h3>
-        <span class="answer">${answer}</span>
+        <h3 id="question--${id}" class="question">${questionHtml}</h3>
+        <span class="answer">${answerHtml}</span>
       </div>
       `;
     })
