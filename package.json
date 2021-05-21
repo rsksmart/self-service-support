@@ -6,7 +6,9 @@
   "main": "run.js",
   "scripts": {
     "start": "node run.js",
-    "test": "node run.e2e.test.js"
+    "test-unit": "node all.unit.test.js",
+    "test-e2e": "node all.e2e.test.js",
+    "test": "npm run test-unit && npm run test-e2e"
   },
   "repository": {
     "type": "git",
