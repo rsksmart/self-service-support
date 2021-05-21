@@ -6,6 +6,7 @@
   "main": "run.js",
   "scripts": {
     "start": "node run.js",
+    "dev": "node-dev run.js",
     "test-unit": "node all.unit.test.js",
     "test-e2e": "node all.e2e.test.js",
     "test": "npm run test-unit && npm run test-e2e"
