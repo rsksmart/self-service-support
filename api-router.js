@@ -1,6 +1,6 @@
 const express = require('express');
 
-const calcTxAge = require('./util/calc-tx-age.js');
+const calcTxInfo = require('./util/calc-tx-info.js');
 const rskTokenBridgeController = require('./rsk-token-bridge-controller.js');
 
 const router = express.Router();
@@ -57,16 +57,19 @@ router.get('/:product/options', async (req, res) => {
     });
     return;
   }
-  let txAge = 0;
+  let txInfo;
   try {
-    txAge = await calcTxAge(fromNetwork, txHash);
+    txInfo = await calcTxInfo(fromNetwork, txHash);
   } catch (ex) {
+    console.error(ex);
     res.status(400).json({
-      error: 'unable to calculate tx age',
+      error: 'unable to calculate tx info',
       value: [ex.message],
     });
     return;
   }
+  const txFrom = txInfo.tx.from;
+  const txAge = txInfo.meta.txAge;
 
   // now we have the necessary information:
   // transaction age, the from network, and the wallet used
@@ -76,6 +79,7 @@ router.get('/:product/options', async (req, res) => {
     txHash,
     walletName,
     txAge,
+    txFrom,
   };
   const options =
     rskTokenBridgeController.getOptionsRendered(params);

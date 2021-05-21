@@ -9,7 +9,7 @@ const rpcUrls = {
   'ethereum-kovan': `https://kovan.infura.io/v3/${infuraProjectId}`,
 };
 
-async function calcTxAge(network, txHash) {
+async function calcTxInfo(network, txHash) {
   // get latest block number
   const getTransactionByHashRpc = jsonRpcRequest(
     network,
@@ -27,17 +27,26 @@ async function calcTxAge(network, txHash) {
   const [getTransactionByHashResponse, blockNumberResponse] =
     await Promise.all([getTransactionByHashRpc, blockNumberRpc]);
 
-  if (!getTransactionByHashResponse.data.result) {
+  const tx =
+    getTransactionByHashResponse.data && getTransactionByHashResponse.data.result;
+  if (!tx) {
     throw new Error(`Transaction does not exist or hash is invalid: ${txHash}`);
   }
 
   const txBlockNumber = convertHexStringToNumber(
-    getTransactionByHashResponse.data.result.blockNumber);
+    tx.blockNumber);
   const latestBlockNumber = convertHexStringToNumber(
     blockNumberResponse.data.result);
 
-  // return the difference
-  return latestBlockNumber - txBlockNumber;
+  // calculate age of transaction in number of blocks
+  const txAge = (latestBlockNumber - txBlockNumber);
+
+  return {
+    tx,
+    meta: {
+      txAge,
+    },
+  };
 }
 
 function jsonRpcRequest(network, method, params) {
@@ -67,4 +76,4 @@ function convertHexStringToNumber(x) {
   return parseInt(Number(x), 10);
 }
 
-module.exports = calcTxAge;
+module.exports = calcTxInfo;
