@@ -15,7 +15,9 @@ function onCheckButtonClicked() {
     .get(url)
     .then((response) => {
       console.log(response);
-      const outputObject = response.data && response.data && response.data.options || response;
+      const outputObject =
+        (response.data && response.data && response.data.options) ||
+        response;
       const outputStr = JSON.stringify(outputObject, undefined, 2);
       outputArea.innerHTML = `<h2>Result</h2><br><pre>${JSON.stringify(response.data.options, undefined, 2)}</pre>`;
     })
