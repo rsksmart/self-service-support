@@ -7,12 +7,21 @@ const apiRouter = require('./api-router.js');
 
 const server = express();
 
-var corsOptions = {
-  origin: [
-    'https://rsk.co',
-    /\.rsk\.co$/,
-  ],
-  optionsSuccessStatus: 200,
+let corsOptions;
+const permissiveCors = process.env.PERMISSIVE_CORS;
+if (permissiveCors) {
+  corsOptions = {
+    origin: true,
+    optionsSuccessStatus: 200,
+  };
+} else {
+  corsOptions = {
+    origin: [
+      'https://rsk.co',
+      /\.rsk\.co$/,
+    ],
+    optionsSuccessStatus: 200,
+  };
 }
 
 server.use(cors(corsOptions));
