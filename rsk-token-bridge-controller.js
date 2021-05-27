@@ -33,11 +33,15 @@ function getOptions(params) {
       optionIds.add(filterOption);
     });
   });
-  const options = [...optionIds.values()].map((optionId) => {
-    return rskTokenBridgeOptions[optionId];
-  }).filter((option) => {
-    return !!option;
+  const options = [...optionIds.values()].filter((optionId) => {
+    return !!rskTokenBridgeOptions[optionId];
+  }).map((optionId) => {
+    return {
+      id: optionId,
+      ...(rskTokenBridgeOptions[optionId]),
+    };
   });
+
   return options;
 }
 
@@ -45,8 +49,9 @@ function getOptionsRendered(params) {
   const options = getOptions(params);
   const substitutions = stringSubstitute.getSubstitutions(params);
   const renderedOptions = options.map((option) => {
-    const { question, answer } = option;
+    const { id, question, answer } = option;
     return {
+      id,
       question: stringSubstitute.substitute(question, substitutions),
       answer: stringSubstitute.substitute(answer, substitutions),
     }
