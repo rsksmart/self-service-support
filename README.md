@@ -73,6 +73,39 @@ npm run prod
 
 > Note: Use `npm run` to see all the run scripts.
 
+## APIs
+
+### RSK Token Bridge - Options
+
+Issue the following HTTP request:
+
+```
+GET /api/v1/rsk-token-bridge/options?fromNetwork=ethereum-mainnet&txHash=0x3985fe2ad509a4588501494a715957506f401364112bd55090529686aa538962&walletName=metamask
+Accept: application/json
+
+```
+
+Use a different `Accept` header of `text/html`
+to get a HTML fragment instead of JSON:
+
+```
+GET /api/v1/rsk-token-bridge/options?fromNetwork=ethereum-mainnet&txHash=0x3985fe2ad509a4588501494a715957506f401364112bd55090529686aa538962&walletName=metamask
+Accept: application/json
+
+```
+
+Query Parameters:
+
+- `fromNetwork`: One of the following
+  - `rsk-mainnet`
+  - `rsk-testnet`
+  - `ethereum-mainnet`
+  - `ethereum-testnet`
+- `txHash`: Any valid transaction hash for the selected network
+- `walletName`: One of the following
+  - `metamask`
+  - `nifty`
+  - `liquality`
 
 ## Author
 
