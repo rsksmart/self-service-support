@@ -75,6 +75,15 @@ npm run prod
 
 ## APIs
 
+### Health Check
+
+Issue the following HTTP request:
+
+```
+GET /api/status
+
+```
+
 ### RSK Token Bridge - Options
 
 Issue the following HTTP request:
