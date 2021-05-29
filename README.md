@@ -45,7 +45,6 @@ less .sample.env
 
 ```
 
-
 ## Run
 
 You can start the server in 3 different ways.
@@ -70,6 +69,8 @@ For a production deployment of the server:
 npm run prod
 
 ```
+
+ALternatively, use the `Dockerfile` provided.
 
 > Note: Use `npm run` to see all the run scripts.
 
