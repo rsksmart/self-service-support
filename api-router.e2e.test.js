@@ -68,7 +68,7 @@ test.skip('GET /api/v1/rsk-token-bridge/options with valid query params (rsk-tes
       };
       t.deepEqual(bodyActual, bodyExpected, 'response match');
       t.ok(typeof txAgeActual === 'number', 'txAge present');
-      t.equal(optionsActual.length, 3, 'contains expected number of options')
+      t.equal(optionsActual.length, 6, 'contains expected number of options')
       t.end();
     });
 });
@@ -96,7 +96,7 @@ test('GET /api/v1/rsk-token-bridge/options with valid query params (rsk-mainnet)
       };
       t.deepEqual(bodyActual, bodyExpected, 'response match');
       t.ok(typeof txAgeActual === 'number', 'txAge present');
-      t.equal(optionsActual.length, 5, 'contains expected number of options')
+      t.equal(optionsActual.length, 8, 'contains expected number of options')
       t.end();
     });
 });
@@ -124,7 +124,7 @@ test('GET /api/v1/rsk-token-bridge/options with valid query params (ethereum-mai
       };
       t.deepEqual(bodyActual, bodyExpected, 'response match');
       t.ok(typeof txAgeActual === 'number', 'txAge present');
-      t.equal(optionsActual.length, 5, 'contains expected number of options')
+      t.equal(optionsActual.length, 8, 'contains expected number of options')
       t.end();
     });
 });
