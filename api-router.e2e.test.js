@@ -92,6 +92,7 @@ test('GET /api/v1/rsk-token-bridge/options with valid query params (rsk-mainnet)
           fromNetwork: 'rsk-mainnet',
           txHash: '0x573c70270258ce99acfc2baaa306fcdc88b1e50c3144d26a8ab74a2f21ea442a',
           walletName: 'nifty',
+          txFrom: '0x0000000000000000000000000000000000000000',
         },
       };
       t.deepEqual(bodyActual, bodyExpected, 'response match');
@@ -119,6 +120,7 @@ test('GET /api/v1/rsk-token-bridge/options with valid query params (ethereum-mai
         properties: {
           fromNetwork: 'ethereum-mainnet',
           txHash: '0x3985fe2ad509a4588501494a715957506f401364112bd55090529686aa538962',
+          txFrom: '0x22cb463a75b3cb26fccd82684449117eda89fba0',
           walletName: 'metamask',
         },
       };
