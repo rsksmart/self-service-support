@@ -57,6 +57,13 @@
     "fromNetwork": "*",
     "txAge": "*",
     "walletName": "*",
-    "options": ["patience", "address-choice", "tx-history"]
+    "options": [
+      "patience",
+      "address-choice",
+      "tx-history",
+      "used-sovryn-bridge",
+      "wrong-network-address",
+      "multiple-web3-providers"
+    ]
   }
 ]
