@@ -10,7 +10,7 @@
     "prod": "NODE_ENV=production pm2 start run.js",
     "test-unit": "node all.unit.test.js",
     "test-e2e": "node all.e2e.test.js",
-    "test": "npm run test-unit && npm run test-e2e"
+    "test": "npm run test-unit"
   },
   "engines": {
     "node": ">=14 <=16"
