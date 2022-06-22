@@ -2,9 +2,7 @@ const db = require('../dbPool.js');
 const format = require('pg-format');
 const tokens = require('../data/tokens.json');
 
-async function queryDb(queryString, address, months) {
-  // pg-format correctly interpolates dates as well
-  const query = format(queryString, address, months);
+async function getQueryResult(query) {
   const queryResult = await db.query(query);
   if (queryResult.rowCount === 0) return 0;
   return Number(queryResult.rows[0].count);
@@ -21,52 +19,6 @@ function getTokenAddress(name = 'tokenName') {
 
 function formatAddress(address = '0x000...') {
   return `\\${address.substring(1)}`;
-}
-
-async function getRbtcTxsNumber(address, months) {
-  /* const queryString = ``;
-  return queryDb(queryString, address, months); */
-  return '%';
-}
-
-async function getRifTxsNumber(address, months) {
-  const queryStr = `
-  SELECT COUNT(*)
-  FROM chain_rsk_mainnet.block_transactions t
-  WHERE t.signed_at >= NOW() - INTERVAL '%s MONTH'
-  AND t.signed_at <= NOW()
-  AND t.from = %L
-  AND t.to = %L
-  `;
-  const query = format(
-    queryStr,
-    months,
-    formatAddress(address),
-    formatAddress(getTokenAddress('rif')),
-  );
-  const queryResult = await db.query(query);
-  if (queryResult.rowCount === 0) return 0;
-  return Number(queryResult.rows[0].count);
-}
-
-async function getMocTxsNumber(address, months) {
-  return '!';
-}
-
-async function getRocTxsNumber(address, months) {
-  return '@';
-}
-
-async function getSovrynTxsNumber(address, months) {
-  return '#';
-}
-
-async function getTropykusTxsNumber(address, months) {
-  return '&';
-}
-
-async function checkForRnsDomain(address) {
-  return '0';
 }
 
 // assembles an object from values and props arrays
@@ -93,6 +45,45 @@ function validateParams(address, months) {
     throw new Error(`Number of months '${months}' has unsupported format`);
 }
 
+async function getRbtcTxsNumber(address, months) {
+  const queryStr = `
+  SELECT COUNT(*)
+  FROM chain_rsk_mainnet.block_transactions t
+  WHERE t.signed_at >= NOW() - INTERVAL '%s MONTH'
+  AND t.signed_at <= NOW()
+  AND t.value > 0
+  AND t.from = %L
+  `;
+  const query = format(queryStr, months, formatAddress(address));
+  return getQueryResult(query);
+}
+
+async function getTokenTxNumber(tokenNames = [], address, months = 6) {
+  const queryStr = `
+  SELECT COUNT(*)
+  FROM chain_rsk_mainnet.block_transactions t
+  WHERE t.signed_at >= NOW() - INTERVAL '%s MONTH'
+  AND t.signed_at <= NOW()
+  AND t.from = %L
+  AND (${Array(tokenNames.length).fill('t.to = %L').join(' OR ')})
+  `;
+  const query = format(
+    queryStr,
+    months,
+    formatAddress(address),
+    ...tokenNames.map((name) => formatAddress(getTokenAddress(name))),
+  );
+  return getQueryResult(query);
+}
+
+async function getTropykusTxNumber(address, months) {
+  return '&';
+}
+
+async function checkForRnsDomain(address) {
+  return '0';
+}
+
 async function getAddressReport(address, months = 6) {
   validateParams(address, months);
   const propNames = [
@@ -107,12 +98,12 @@ async function getAddressReport(address, months = 6) {
   return createObject(
     await Promise.all([
       getRbtcTxsNumber(address, months),
-      getRifTxsNumber(address, months),
+      getTokenTxNumber(['rif'], address, months),
       checkForRnsDomain(address),
-      getMocTxsNumber(address, months),
-      getRocTxsNumber(address, months),
-      getSovrynTxsNumber(address, months),
-      getTropykusTxsNumber(address, months),
+      getTokenTxNumber(['moc', 'doc', 'bitp'], address, months),
+      getTokenTxNumber(['rdoc', 'rifpro'], address, months),
+      getTokenTxNumber(['sov', 'xusd'], address, months),
+      getTropykusTxNumber(address, months),
     ]),
     propNames,
   );
