@@ -2,6 +2,7 @@ const express = require('express');
 
 const calcTxInfo = require('./util/calc-tx-info.js');
 const rskTokenBridgeController = require('./rsk-token-bridge-controller.js');
+const getAddressReport = require('./util/address-report.js');
 
 const router = express.Router();
 
@@ -17,11 +18,7 @@ const allowedFromNetworks = [
   'ethereum-kovan',
 ];
 
-const allowedWalletNames = [
-  'metamask',
-  'nifty',
-  'liquality',
-];
+const allowedWalletNames = ['metamask', 'nifty', 'liquality'];
 
 router.get('/:product/options', async (req, res) => {
   const productName = req.params.product;
@@ -32,22 +29,21 @@ router.get('/:product/options', async (req, res) => {
     });
     return;
   }
-  const {
-    fromNetwork,
-    txHash,
-    walletName,
-  } = req.query;
+  const { fromNetwork, txHash, walletName } = req.query;
   let queryErrors = [];
-  if (typeof fromNetwork !== 'string' ||
-    allowedFromNetworks.indexOf(fromNetwork) < 0) {
+  if (
+    typeof fromNetwork !== 'string' ||
+    allowedFromNetworks.indexOf(fromNetwork) < 0
+  ) {
     queryErrors.push('invalid fromNetwork: ' + fromNetwork);
   }
-  if (typeof txHash !== 'string' ||
-    !txHash.startsWith('0x')) {
-    queryErrors.push('invalid txHash: '+ txHash);
+  if (typeof txHash !== 'string' || !txHash.startsWith('0x')) {
+    queryErrors.push('invalid txHash: ' + txHash);
   }
-  if (typeof walletName !== 'string' ||
-    allowedWalletNames.indexOf(walletName) < 0) {
+  if (
+    typeof walletName !== 'string' ||
+    allowedWalletNames.indexOf(walletName) < 0
+  ) {
     queryErrors.push('invalid walletName: ' + walletName);
   }
   if (queryErrors.length > 0) {
@@ -81,15 +77,14 @@ router.get('/:product/options', async (req, res) => {
     txAge,
     txFrom,
   };
-  const options =
-    rskTokenBridgeController.getOptionsRendered(params);
+  const options = rskTokenBridgeController.getOptionsRendered(params);
 
   res.format({
-    html: function() {
+    html: function () {
       const htmlForOptions = rskTokenBridgeController.getOptionsHtml(options);
       res.status(200).send(htmlForOptions);
     },
-    default: function() {
+    default: function () {
       res.status(200).json({
         message: 'ok',
         properties: params,
@@ -97,6 +92,18 @@ router.get('/:product/options', async (req, res) => {
       });
     },
   });
+});
+
+router.get('/rsk-address-report/protocol-usage', async (req, res) => {
+  try {
+    const { address, months } = req.query;
+    const addressReport = await getAddressReport(address, months);
+    res.status(200).json(addressReport);
+  } catch (error) {
+    res.status(400).json({
+      error: error.message,
+    });
+  }
 });
 
 module.exports = router;

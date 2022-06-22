@@ -23,7 +23,7 @@ npm install
 Install global dependencies
 
 ```shell
-npm install --global pm2
+npm install --global pm2 node-dev
 
 ```
 
@@ -52,7 +52,7 @@ You can start the server in 3 different ways.
 For development (with hot-reload enabled, via `node-dev`):
 
 ```shell
-npm run start
+npm run dev
 
 ```
 
