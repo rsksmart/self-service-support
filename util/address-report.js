@@ -1,5 +1,7 @@
 const db = require('../dbPool.js');
 const format = require('pg-format');
+const Web3 = require('web3');
+const RNS = require('@rsksmart/rns');
 const tokens = require('../data/tokens.json');
 
 async function getQueryResult(query) {
@@ -80,8 +82,17 @@ async function getTropykusTxNumber(address, months) {
   return '&';
 }
 
-async function checkForRnsDomain(address) {
-  return '0';
+async function checkForRnsDomain(address = '') {
+  const web3 = new Web3('https://public-node.rsk.co');
+  const rns = new RNS(web3);
+  const corrected = Web3.utils.toChecksumAddress(address);
+  let domain;
+  try {
+    domain = await rns.reverse(corrected);
+  } catch (error) {
+    domain = error.message;
+  }
+  return domain;
 }
 
 async function getAddressReport(address, months = 6) {

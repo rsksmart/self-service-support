@@ -117,6 +117,19 @@ Query Parameters:
   - `nifty`
   - `liquality`
 
+### Query to work out if given addresses are users of various protocols
+
+```
+GET /api/v1/rsk-address-report/protocol-usage?address=0x8Be2E5Fe4348Ea38777a7c175Abb89050770E854&months=7
+Accept: application/json
+
+```
+Query Parameters:
+
+- `address`: RSK wallet address
+- `months`: number of months back from now
+
+
 ## Author
 
 [Brendan Graetz](http://bguiz.com/)
