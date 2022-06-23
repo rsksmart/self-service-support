@@ -1,7 +1,5 @@
 const db = require('../dbPool.js');
 const format = require('pg-format');
-// const Web3 = require('web3');
-// const RNS = require('@rsksmart/rns');
 const tokens = require('../data/tokens.json');
 
 async function getQueryResult(query) {
@@ -79,31 +77,48 @@ async function getTokenTxNumber(tokenNames = [], address, months = 6) {
 }
 
 async function getTropykusTxNumber(address, months) {
+  // to be implemented
   return null;
 }
 
 async function checkForRnsDomain(address = '') {
-  return null;
-  // const web3 = new Web3('https://public-node.rsk.co');
-  // const rns = new RNS(web3);
-  // const corrected = Web3.utils.toChecksumAddress(address);
-  // let domain;
-  // try {
-  //   domain = await rns.reverse(corrected);
-  // } catch (error) {
-  //   domain = error.message;
-  // }
-  // return domain;
+  const transferEventTopic =
+    '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+  const queryStr = `
+  -- I am counting the number 
+  SELECT COUNT(*)
+  -- of RSK Mainnet transactions 
+  FROM chain_rsk_mainnet.block_transactions t 
+  -- emitting events, such that
+  INNER JOIN chain_rsk_mainnet.block_log_events e
+  ON e.block_id = t.block_id
+  AND e.tx_offset = t.tx_offset
+  -- if someone is sending a tx from his wallet address
+  WHERE t.from = %L
+  -- to the RNS Top Level Domains smart contract,
+  AND t.to = %L
+  -- this tx should emit the Transfer event 
+  AND e.topics @> array[%L::bytea] 
+  AND e.topics[1] = %L
+  `;
+  const query = format(
+    queryStr,
+    formatAddress(address),
+    formatAddress(getTokenAddress('rns_tld')),
+    formatAddress(transferEventTopic),
+    formatAddress(transferEventTopic),
+  );
+  return getQueryResult(query) > 0;
 }
 
 async function getAddressReport(address, months = 6) {
   validateParams(address, months);
   const propNames = [
     'rbtc_transfers',
-    'rif_transfers',
+    'rif_txs',
     'rns_domain',
     'moc_txs',
-    'roc_txs',
+    'rdoc_txs',
     'sovryn_txs',
     'tropycus_txs',
   ];
