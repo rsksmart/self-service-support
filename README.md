@@ -23,7 +23,7 @@ npm install
 Install global dependencies
 
 ```shell
-npm install --global pm2
+npm install --global pm2 node-dev
 
 ```
 
@@ -52,7 +52,7 @@ You can start the server in 3 different ways.
 For development (with hot-reload enabled, via `node-dev`):
 
 ```shell
-npm run start
+npm run dev
 
 ```
 
@@ -116,6 +116,19 @@ Query Parameters:
   - `metamask`
   - `nifty`
   - `liquality`
+
+### Query to work out if given addresses are users of various protocols
+
+```
+GET /api/v1/rsk-address-report/protocol-usage?address=0x8Be2E5Fe4348Ea38777a7c175Abb89050770E854&months=7
+Accept: application/json
+
+```
+Query Parameters:
+
+- `address`: RSK wallet address
+- `months`: number of months back from now
+
 
 ## Author
 
