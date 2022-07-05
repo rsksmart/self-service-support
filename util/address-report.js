@@ -25,21 +25,6 @@ function formatTopic(address = '0x000...') {
   return `\\x000000000000000000000000${address.substring(2)}`;
 }
 
-// assembles an object from values and props arrays
-function createObject(values = [], propNames = []) {
-  if (values.length !== propNames.length)
-    throw new Error(
-      `createObject(): property and value number of an object should equal`,
-    );
-  return values.reduce(
-    (object, currentValue, index) => ({
-      ...object,
-      [propNames[index]]: currentValue,
-    }),
-    {},
-  );
-}
-
 function validateParams(address, months) {
   if (!address)
     throw new Error(
@@ -102,7 +87,7 @@ async function getRnsTldTxNumber(address = '') {
   return getQueryResult(query);
 }
 
-async function getAddressReport(address, months = 6) {
+async function getAddressReportOld(address, months = 6) {
   validateParams(address, months);
   const propNames = [
     'rbtc_transfers',
@@ -125,6 +110,20 @@ async function getAddressReport(address, months = 6) {
     ]),
     propNames,
   );
+}
+
+async function getAddressReport(address, months = 6) {
+  validateParams(address, months);
+  return (await Promise.all([
+    {rbtc_transfers: await getRbtcTxsNumber(address, months)},
+    {rif_txsrif_txs: await getTokenTxNumber(['rif'], address, months)},
+    {rns_txs: await getRnsTldTxNumber(address)},
+    {moc_txs: await getTokenTxNumber(['moc', 'doc', 'bitp'], address, months)},
+    {rdoc_txs: await getTokenTxNumber(['rdoc', 'rifpro'], address, months)},
+    {sovryn_txs: await getTokenTxNumber(['sov', 'xusd'], address, months)},
+    {tropycus_txs: await getTokenTxNumber(['ksat', 'krbtc', 'kdoc', 'kxusd'], address, months)},
+    // join array of objects into one object
+  ])).reduce((p,c) => ({...p, ...c}), {});
 }
 
 module.exports = getAddressReport;
