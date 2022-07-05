@@ -21,6 +21,10 @@ function formatAddress(address = '0x000...') {
   return `\\${address.substring(1)}`;
 }
 
+function formatTopic(address = '0x000...') {
+  return `\\x000000000000000000000000${address.substring(2)}`;
+}
+
 // assembles an object from values and props arrays
 function createObject(values = [], propNames = []) {
   if (values.length !== propNames.length)
@@ -76,39 +80,26 @@ async function getTokenTxNumber(tokenNames = [], address, months = 6) {
   return getQueryResult(query);
 }
 
-async function getTropykusTxNumber(address, months) {
-  // to be implemented
-  return null;
-}
-
-async function checkForRnsDomain(address = '') {
+async function getRnsTldTxNumber(address = '') {
   const transferEventTopic =
     '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
   const queryStr = `
-  -- I am counting the number 
   SELECT COUNT(*)
-  -- of RSK Mainnet transactions 
-  FROM chain_rsk_mainnet.block_transactions t 
-  -- emitting events, such that
-  INNER JOIN chain_rsk_mainnet.block_log_events e
-  ON e.block_id = t.block_id
-  AND e.tx_offset = t.tx_offset
-  -- if someone is sending a tx from his wallet address
-  WHERE t.from = %L
-  -- to the RNS Top Level Domains smart contract,
-  AND t.to = %L
-  -- this tx should emit the Transfer event 
-  AND e.topics @> array[%L::bytea] 
-  AND e.topics[1] = %L
+  FROM chain_rsk_mainnet.block_log_events e
+  -- an event was emitted by RNS TLD s/c
+  WHERE e.sender = %L
+  -- and the event parameters include:
+  -- 1. transfer event topic hash
+  -- 2. investigated address
+  AND e.topics @> array[%L::bytea, %L::bytea]
   `;
   const query = format(
     queryStr,
-    formatAddress(address),
     formatAddress(getTokenAddress('rns_tld')),
     formatAddress(transferEventTopic),
-    formatAddress(transferEventTopic),
+    formatTopic(address),
   );
-  return getQueryResult(query) > 0;
+  return getQueryResult(query);
 }
 
 async function getAddressReport(address, months = 6) {
@@ -116,7 +107,7 @@ async function getAddressReport(address, months = 6) {
   const propNames = [
     'rbtc_transfers',
     'rif_txs',
-    'rns_domain',
+    'rns_txs',
     'moc_txs',
     'rdoc_txs',
     'sovryn_txs',
@@ -126,11 +117,11 @@ async function getAddressReport(address, months = 6) {
     await Promise.all([
       getRbtcTxsNumber(address, months),
       getTokenTxNumber(['rif'], address, months),
-      checkForRnsDomain(address),
+      getRnsTldTxNumber(address),
       getTokenTxNumber(['moc', 'doc', 'bitp'], address, months),
       getTokenTxNumber(['rdoc', 'rifpro'], address, months),
       getTokenTxNumber(['sov', 'xusd'], address, months),
-      getTropykusTxNumber(address, months),
+      getTokenTxNumber(['ksat', 'krbtc', 'kdoc', 'kxusd'], address, months),
     ]),
     propNames,
   );
