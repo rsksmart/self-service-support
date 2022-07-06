@@ -24,6 +24,7 @@ router.get('/:product/options', async (req, res) => {
   const productName = req.params.product;
   if (productName !== 'rsk-token-bridge') {
     res.status(400).json({
+      endPointVersion: 1,
       error: 'unsupported product',
       value: [productName],
     });
@@ -48,6 +49,7 @@ router.get('/:product/options', async (req, res) => {
   }
   if (queryErrors.length > 0) {
     res.status(400).json({
+      endPointVersion: 1,
       error: 'invalid inputs',
       value: queryErrors,
     });
@@ -59,6 +61,7 @@ router.get('/:product/options', async (req, res) => {
   } catch (ex) {
     console.error(ex);
     res.status(400).json({
+      endPointVersion: 1,
       error: 'unable to calculate tx info',
       value: [ex.message],
     });
@@ -86,6 +89,7 @@ router.get('/:product/options', async (req, res) => {
     },
     default: function () {
       res.status(200).json({
+        endPointVersion: 1,
         message: 'ok',
         properties: params,
         options,
@@ -98,9 +102,13 @@ router.get('/rsk-address-report/protocol-usage', async (req, res) => {
   try {
     const { address, months } = req.query;
     const addressReport = await getAddressReport(address, months);
-    res.status(200).json(addressReport);
+    res.status(200).json({
+      endPointVersion: 2,
+      ...addressReport
+    });
   } catch (error) {
     res.status(400).json({
+      endPointVersion: 2,
       error: error.message,
     });
   }
