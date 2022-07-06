@@ -1,7 +1,5 @@
 const db = require('../dbPool.js');
 const format = require('pg-format');
-const Web3 = require('web3');
-const RNS = require('@rsksmart/rns');
 const tokens = require('../data/tokens.json');
 
 async function getQueryResult(query) {
@@ -21,6 +19,10 @@ function getTokenAddress(name = 'tokenName') {
 
 function formatAddress(address = '0x000...') {
   return `\\${address.substring(1)}`;
+}
+
+function formatTopic(address = '0x000...') {
+  return `\\x000000000000000000000000${address.substring(2)}`;
 }
 
 // assembles an object from values and props arrays
@@ -61,48 +63,61 @@ async function getRbtcTxsNumber(address, months) {
 }
 
 async function getTokenTxNumber(tokenNames = [], address, months = 6) {
+  const querySubStrForTokenListWhereClause =
+    Array(tokenNames.length).fill('t.to = %L').join(' OR ');
+  const queryInputValuesForTokenListWhereClause =
+    tokenNames.map((name) => formatAddress(getTokenAddress(name)));
   const queryStr = `
   SELECT COUNT(*)
   FROM chain_rsk_mainnet.block_transactions t
   WHERE t.signed_at >= NOW() - INTERVAL '%s MONTH'
   AND t.signed_at <= NOW()
   AND t.from = %L
-  AND (${Array(tokenNames.length).fill('t.to = %L').join(' OR ')})
+  AND (${querySubStrForTokenListWhereClause})
   `;
   const query = format(
     queryStr,
     months,
     formatAddress(address),
-    ...tokenNames.map((name) => formatAddress(getTokenAddress(name))),
+    ...queryInputValuesForTokenListWhereClause,
   );
   return getQueryResult(query);
 }
 
-async function getTropykusTxNumber(address, months) {
-  return '&';
-}
-
-async function checkForRnsDomain(address = '') {
-  const web3 = new Web3('https://public-node.rsk.co');
-  const rns = new RNS(web3);
-  const corrected = Web3.utils.toChecksumAddress(address);
-  let domain;
-  try {
-    domain = await rns.reverse(corrected);
-  } catch (error) {
-    domain = error.message;
-  }
-  return domain;
+async function getRnsTldTxNumber(address = '') {
+  const transferEventTopic =
+    '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+  const queryStr = `
+  SELECT COUNT(*)
+  FROM chain_rsk_mainnet.block_log_events e
+  -- an event was emitted by RNS TLD s/c
+  WHERE e.sender = %L
+  -- and the event parameters include:
+  -- 1. transfer event topic hash
+  -- 2. investigated address
+  AND e.topics @> array[%L::bytea, %L::bytea]
+  AND e.topics[1] = %L
+  AND e.topics[3] = %L
+  `;
+  const query = format(
+    queryStr,
+    formatAddress(getTokenAddress('rns_tld')),
+    formatAddress(transferEventTopic),
+    formatTopic(address),
+    formatAddress(transferEventTopic),
+    formatTopic(address),
+  );
+  return getQueryResult(query);
 }
 
 async function getAddressReport(address, months = 6) {
   validateParams(address, months);
   const propNames = [
     'rbtc_transfers',
-    'rif_transfers',
-    'rns_domain',
+    'rif_txs',
+    'rns_txs',
     'moc_txs',
-    'roc_txs',
+    'rdoc_txs',
     'sovryn_txs',
     'tropycus_txs',
   ];
@@ -110,11 +125,11 @@ async function getAddressReport(address, months = 6) {
     await Promise.all([
       getRbtcTxsNumber(address, months),
       getTokenTxNumber(['rif'], address, months),
-      checkForRnsDomain(address),
+      getRnsTldTxNumber(address),
       getTokenTxNumber(['moc', 'doc', 'bitp'], address, months),
       getTokenTxNumber(['rdoc', 'rifpro'], address, months),
       getTokenTxNumber(['sov', 'xusd'], address, months),
-      getTropykusTxNumber(address, months),
+      getTokenTxNumber(['ksat', 'krbtc', 'kdoc', 'kxusd'], address, months),
     ]),
     propNames,
   );
