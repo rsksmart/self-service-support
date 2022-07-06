@@ -63,19 +63,23 @@ async function getRbtcTxsNumber(address, months) {
 }
 
 async function getTokenTxNumber(tokenNames = [], address, months = 6) {
+  const querySubStrForTokenListWhereClause =
+    Array(tokenNames.length).fill('t.to = %L').join(' OR ');
+  const queryInputValuesForTokenListWhereClause =
+    tokenNames.map((name) => formatAddress(getTokenAddress(name)));
   const queryStr = `
   SELECT COUNT(*)
   FROM chain_rsk_mainnet.block_transactions t
   WHERE t.signed_at >= NOW() - INTERVAL '%s MONTH'
   AND t.signed_at <= NOW()
   AND t.from = %L
-  AND (${Array(tokenNames.length).fill('t.to = %L').join(' OR ')})
+  AND (${querySubStrForTokenListWhereClause})
   `;
   const query = format(
     queryStr,
     months,
     formatAddress(address),
-    ...tokenNames.map((name) => formatAddress(getTokenAddress(name))),
+    ...queryInputValuesForTokenListWhereClause,
   );
   return getQueryResult(query);
 }
@@ -92,10 +96,14 @@ async function getRnsTldTxNumber(address = '') {
   -- 1. transfer event topic hash
   -- 2. investigated address
   AND e.topics @> array[%L::bytea, %L::bytea]
+  AND e.topics[1] = %L
+  AND e.topics[3] = %L
   `;
   const query = format(
     queryStr,
     formatAddress(getTokenAddress('rns_tld')),
+    formatAddress(transferEventTopic),
+    formatTopic(address),
     formatAddress(transferEventTopic),
     formatTopic(address),
   );
