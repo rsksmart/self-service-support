@@ -33,7 +33,7 @@ jobs:
             aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Deploy Self-Service
+      - name: Deploy Self-Service Main
         run: |
               aws ssm send-command \
                   --document-name "AWS-RunRemoteScript" \
