@@ -103,12 +103,12 @@ router.get('/rsk-address-report/protocol-usage', async (req, res) => {
     const { address, months } = req.query;
     const addressReport = await getAddressReport(address, months);
     res.status(200).json({
-      endPointVersion: 3,
+      endPointVersion: 4,
       ...addressReport
     });
   } catch (error) {
     res.status(400).json({
-      endPointVersion: 3,
+      endPointVersion: 4,
       error: error.message,
     });
   }
