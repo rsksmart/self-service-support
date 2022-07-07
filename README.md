@@ -129,7 +129,6 @@ Query Parameters:
 - `address`: RSK wallet address
 - `months`: number of months back from now
 
-
 ## Author
 
 [Brendan Graetz](http://bguiz.com/)
