@@ -124,10 +124,26 @@ GET /api/v1/rsk-address-report/protocol-usage?address=0x8Be2E5Fe4348Ea38777a7c17
 Accept: application/json
 
 ```
+
 Query Parameters:
 
 - `address`: RSK wallet address
 - `months`: number of months back from now
+
+## Query to work out how many accounts are active
+
+An account is deemed to be active if it has sent a transaction within
+the past `${days}` number of days.
+
+```
+GET /api/v1/rsk-activity-report/all?days=365
+Accept: application/json
+
+```
+
+Query Parameters:
+
+- `days`: Number of days
 
 ## Author
 

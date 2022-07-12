@@ -3,6 +3,7 @@ const express = require('express');
 const calcTxInfo = require('./util/calc-tx-info.js');
 const rskTokenBridgeController = require('./rsk-token-bridge-controller.js');
 const getAddressReport = require('./util/address-report.js');
+const rskActivityReport = require('./util/activity-report.js');
 
 const router = express.Router();
 
@@ -109,6 +110,22 @@ router.get('/rsk-address-report/protocol-usage', async (req, res) => {
   } catch (error) {
     res.status(400).json({
       endPointVersion: 4,
+      error: error.message,
+    });
+  }
+});
+
+router.get('/rsk-activity-report/all-activity', async (req, res) => {
+  try {
+    const { days } = req.query;
+    const allActivityReport = await rskActivityReport.queryAllActivity(days);
+    res.status(200).json({
+      endPointVersion: 1,
+      ...allActivityReport
+    });
+  } catch (error) {
+    res.status(400).json({
+      endPointVersion: 1,
       error: error.message,
     });
   }
