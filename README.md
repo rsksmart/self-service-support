@@ -141,9 +141,22 @@ Accept: application/json
 
 ```
 
+## Query
+
+Counts the number of deployment transactions,
+and unique addresses making them within a specified date range.
+
+```
+GET /api/v1/rsk-activity-report/developer-activity?startDate=2022.04.01&endDate=2022.05.01&chain=rsk_testnet
+Accept: application/json
+
+```
+
 Query Parameters:
 
-- `days`: Number of days
+- `startDate`: Get stats from and including this date
+- `endDate`: Get stats up to and including this date
+- `chain`: Possible values are `rsk_mainnet` and `rsk_testnet`
 
 ## Author
 
