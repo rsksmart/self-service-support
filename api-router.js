@@ -117,16 +117,16 @@ router.get('/rsk-address-report/protocol-usage', async (req, res) => {
 
 router.get('/rsk-activity-report/all-activity', async (req, res) => {
   try {
-    const { days } = req.query;
+    const { days, chain } = req.query;
     const allActivityReport = await rskActivityReport
-      .queryAllActivity(days);
+      .queryAllActivity(days, chain);
     res.status(200).json({
-      endPointVersion: 1,
+      endPointVersion: 2,
       ...allActivityReport
     });
   } catch (error) {
     res.status(400).json({
-      endPointVersion: 1,
+      endPointVersion: 2,
       error: error.message,
     });
   }
@@ -138,12 +138,12 @@ router.get('/rsk-activity-report/developer-activity', async (req, res) => {
     const allActivityReport = await rskActivityReport
       .queryDeveloperActivity(startDate, endDate, chain);
     res.status(200).json({
-      endPointVersion: 1,
+      endPointVersion: 2,
       ...allActivityReport
     });
   } catch (error) {
     res.status(400).json({
-      endPointVersion: 1,
+      endPointVersion: 2,
       error: error.message,
     });
   }

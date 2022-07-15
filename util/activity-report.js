@@ -2,21 +2,34 @@ const db = require('../dbPool.js');
 const format = require('pg-format');
 const tokens = require('../data/tokens.json');
 
+const chainTableNames = {
+  'rsk_testnet': 'chain_rsk_testnet',
+  'rsk_mainnet': 'chain_rsk_mainnet',
+};
+
+function getChainTableName(chain) {
+  if (!chain || !chainTableNames[chain]) {
+    throw new Error(`chain '${chain}' is not supported`);
+  }
+  return chainTableNames[chain];
+}
+
 async function getQueryResult(query) {
   const queryResult = await db.query(query);
   if (queryResult.rowCount === 0) return 0;
   return Number(queryResult.rows[0].count);
 }
 
-async function dbQueryAllActivity(days = 30) {
+async function dbQueryAllActivity(days, chainTableName) {
   const queryStr = `
   SELECT COUNT(DISTINCT t.from)
-  FROM chain_rsk_mainnet.block_transactions t
+  FROM %I.block_transactions t
   WHERE t.signed_at >= NOW() - INTERVAL '%s DAY'
   AND t.signed_at <= NOW()
   `;
   const query = format(
     queryStr,
+    chainTableName,
     days,
   );
   return getQueryResult(query);
@@ -27,13 +40,14 @@ async function dbQueryDeveloperActivity(startDate, endDate, chainTableName) {
   SELECT
     COUNT(*) as deployment_tx_count,
     COUNT(DISTINCT t.from) as deployment_account_count
-  FROM ${chainTableName}.block_transactions t
+  FROM %I.block_transactions t
   WHERE t.signed_at >= %L
   AND t.signed_at <= %L
   AND t.to IS NULL
   `;
   const query = format(
     queryStr,
+    chainTableName,
     startDate,
     endDate,
   );
@@ -52,37 +66,37 @@ async function dbQueryDeveloperActivity(startDate, endDate, chainTableName) {
   };
 }
 
-async function queryAllActivity(days) {
-  if (isNaN(days) || days <= 0)
+async function queryAllActivity(
+  days,
+  chain = 'rsk_mainnet',
+) {
+  if (isNaN(days) || days <= 0) {
     throw new Error(`Number of days '${days}' has unsupported format`);
-  const dbResult = await dbQueryAllActivity(days);
+  }
+  if (!chain || !chainTableNames[chain]) {
+    throw new Error(`chain '${chain}' is not supported`);
+  }
+  const chainTableName = getChainTableName(chain);
+  const dbResult = await dbQueryAllActivity(days, chainTableName);
   return {
     accounts: dbResult,
   };
 }
 
-const chainTableNames = {
-  'rsk_testnet': 'chain_rsk_testnet',
-  'rsk_mainnet': 'chain_rsk_mainnet',
-};
-
 async function queryDeveloperActivity(
   startDate,
   endDate,
-  chain = 'rsk_testnet',
+  chain = 'rsk_mainnet',
 ) {
-  console.log(startDate, endDate, chain);
   if (!startDate) {
     throw new Error(`startDate '${startDate}' has unsupported format`);
   }
   if (!endDate) {
     throw new Error(`endDate '${endDate}' has unsupported format`);
   }
-  if (!chain || !chainTableNames[chain]) {
-    throw new Error(`chain '${chain}' is not supported`);
-  }
+  const chainTableName = getChainTableName(chain);
   const queryResult = await dbQueryDeveloperActivity(
-    startDate, endDate, chainTableNames[chain]);
+    startDate, endDate, chainTableName);
   return queryResult;
 }
 
