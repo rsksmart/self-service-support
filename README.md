@@ -136,12 +136,12 @@ An account is deemed to be active if it has sent a transaction within
 the past `${days}` number of days.
 
 ```
-GET /api/v1/rsk-activity-report/all?days=365
+GET /api/v1/rsk-activity-report/all-activity?days=365
 Accept: application/json
 
 ```
 
-## Query
+## Query to work out developer activity
 
 Counts the number of deployment transactions,
 and unique addresses making them within a specified date range.
@@ -157,6 +157,24 @@ Query Parameters:
 - `startDate`: Get stats from and including this date
 - `endDate`: Get stats up to and including this date
 - `chain`: Possible values are `rsk_mainnet` and `rsk_testnet`
+
+## Query to work out developer activity Weighted Moving Average
+
+Calculates the "weighted moving average" for the number of deployment transactions,
+and unique addresses for a specified date.
+
+```
+GET /api/v1/rsk-activity-report/developer-activity-wma?date=2022.06.01&chain=rsk_testnet
+GET /api/v1/rsk-activity-report/developer-activity-wma
+Accept: application/json
+
+```
+Query Parameters:
+
+- `chain`: Possible values are `rsk_mainnet` and `rsk_testnet`
+If chain is not specified, assumes 'rsk_testnet' by default
+- `date`: date to calculate WMA
+If date is not specified, calculates WMA for the last week
 
 ## Author
 

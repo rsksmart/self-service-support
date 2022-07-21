@@ -149,4 +149,22 @@ router.get('/rsk-activity-report/developer-activity', async (req, res) => {
   }
 });
 
+router.get('/rsk-activity-report/developer-activity-wma', async (req, res) => {
+  try {
+    const { date, chain } = req.query;
+    const activityReport = await rskActivityReport
+      .queryDeveloperActivityWma(date, chain);
+    res.status(200).json({
+      endPointVersion: 1,
+      ...activityReport
+    });
+  } catch (error) {
+    res.status(400).json({
+      endPointVersion: 1,
+      error: error.message,
+    });
+  }
+});
+
+
 module.exports = router;
