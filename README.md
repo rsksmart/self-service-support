@@ -147,34 +147,34 @@ Counts the number of deployment transactions,
 and unique addresses making them within a specified date range.
 
 ```
-GET /api/v1/rsk-activity-report/developer-activity?startDate=2022.04.01&endDate=2022.05.01&chain=rsk_testnet
+GET /api/v1/rsk-activity-report/developer-activity?start-date=2022.04.01&end-date=2022.05.01&chain=rsk_testnet
 Accept: application/json
 
 ```
 
 Query Parameters:
 
-- `startDate`: Get stats from and including this date
-- `endDate`: Get stats up to and including this date
+- `start-date`: Get stats from and including this date
+- `end-date`: Get stats up to and including this date
 - `chain`: Possible values are `rsk_mainnet` and `rsk_testnet`
+If chain is not specified, assumes 'rsk_mainnet' by default
 
-## Query to work out developer activity Weighted Moving Average
+## Query to work out developer activity Moving Averages
 
-Calculates the "weighted moving average" for the number of deployment transactions,
-and unique addresses for a specified date.
+Calculates the simple, weighted and exponential moving averages for the number of deployment transactions, and unique addresses within the specified date range.
 
 ```
-GET /api/v1/rsk-activity-report/developer-activity-wma?date=2022.06.01&chain=rsk_testnet
-GET /api/v1/rsk-activity-report/developer-activity-wma
+GET /api/v1/rsk-activity-report/developer-activity-ma?start-date=2022.04.01&end-date=2022.05.01&chain=rsk_testnet&periods=4
 Accept: application/json
 
 ```
 Query Parameters:
 
+- `start-date`: Get stats from and including this date
+- `end-date`: Get stats up to and including this date
 - `chain`: Possible values are `rsk_mainnet` and `rsk_testnet`
 If chain is not specified, assumes 'rsk_testnet' by default
-- `date`: date to calculate WMA
-If date is not specified, calculates WMA for the last week
+- `periods`: number of time periods (including the current) to take in account while calculating the averages
 
 ## Author
 

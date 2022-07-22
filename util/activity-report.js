@@ -1,6 +1,5 @@
 const db = require('../dbPool.js');
 const format = require('pg-format');
-const tokens = require('../data/tokens.json');
 
 const chainTableNames = {
   'rsk_testnet': 'chain_rsk_testnet',
@@ -12,12 +11,6 @@ function getChainTableName(chain) {
     throw new Error(`chain '${chain}' is not supported`);
   }
   return chainTableNames[chain];
-}
-
-async function getQueryResult(query) {
-  const queryResult = await db.query(query);
-  if (queryResult.rowCount === 0) return 0;
-  return Number(queryResult.rows[0].count);
 }
 
 async function dbQueryAllActivity(days, chainTableName) {
@@ -32,38 +25,9 @@ async function dbQueryAllActivity(days, chainTableName) {
     chainTableName,
     days,
   );
-  return getQueryResult(query);
-}
-
-async function dbQueryDeveloperActivity(startDate, endDate, chainTableName) {
-  const queryStr = `
-  SELECT
-    COUNT(*) as deployment_tx_count,
-    COUNT(DISTINCT t.from) as deployment_account_count
-  FROM %I.block_transactions t
-  WHERE t.signed_at >= %L
-  AND t.signed_at <= %L
-  AND t.to IS NULL
-  `;
-  const query = format(
-    queryStr,
-    chainTableName,
-    startDate,
-    endDate,
-  );
   const queryResult = await db.query(query);
-  if (queryResult.rowCount === 0) {
-    return {
-      deployment_tx_count: 0,
-      deployment_account_count: 0,
-    };
-  }
-  return {
-    deployment_tx_count:
-      parseInt(queryResult.rows[0].deployment_tx_count),
-    deployment_account_count:
-      parseInt(queryResult.rows[0].deployment_account_count),
-  };
+  if (queryResult.rowCount === 0) return 0;
+  return Number(queryResult.rows[0].count);
 }
 
 async function queryAllActivity(
@@ -83,23 +47,6 @@ async function queryAllActivity(
   };
 }
 
-async function queryDeveloperActivity(
-  startDate,
-  endDate,
-  chain = 'rsk_mainnet',
-) {
-  if (!startDate) {
-    throw new Error(`startDate '${startDate}' has unsupported format`);
-  }
-  if (!endDate) {
-    throw new Error(`endDate '${endDate}' has unsupported format`);
-  }
-  const chainTableName = getChainTableName(chain);
-  const queryResult = await dbQueryDeveloperActivity(
-    startDate, endDate, chainTableName);
-  return queryResult;
-}
-
 /* 
 generates time periods to query past activities:
 [
@@ -107,20 +54,32 @@ generates time periods to query past activities:
   [ 2022-07-06T22:00:00.000Z, 2022-07-13T22:00:00.000Z ],
 ] 
 */
-function getPeriods(
-  startDate = new Date(),
-  interval = 7, // days
-  periods = 4, 
+function getTimeIntervals(
+  apiStartDate,
+  apiEndDate,
+  periods, 
 ) {
-  const dates = [];
+  const startDate = new Date(apiStartDate);
+  const endDate = new Date(apiEndDate);
+  
+  if ([startDate, endDate].some((date) => !(date instanceof Date && !isNaN(date))))
+    throw new Error(`date has unsupported format`);
+  if (startDate >= endDate)
+    throw new Error('start day should be earlier than end date');
+  if (isNaN(periods) || periods < 1 || periods > 20)
+    throw new Error(`Illegal moving average 'periods' parameter`);
+
+  const intervalLength = endDate - startDate;
+  const timeIntervals = [];
   for (let i = 0; i < periods; i++) {
-    const dateTo = new Date(startDate);
-    dateTo.setDate(dateTo.getDate() - i * interval);
-    const dateFrom = new Date(dateTo);
-    dateFrom.setDate(dateFrom.getDate() - interval);
-    dates.push([dateFrom, dateTo]);
+    const dateTo = new Date(endDate - intervalLength * i);
+    const dateFrom = new Date(dateTo - intervalLength);
+    timeIntervals.push([dateFrom, dateTo]);
   }
-  return dates;
+  return {
+    timeIntervals,
+    intervalLength,
+  };
 }
 
 function getMovingAverage(type = 'simple', data = []) {
@@ -138,7 +97,7 @@ function getMovingAverage(type = 'simple', data = []) {
   return Number(data.reduce(reducer, 0).toFixed(2));
 }
 
-async function dbQueryDeveloperActivityDataset(periods, chainTableName) {
+async function dbQueryDeveloperActivity(intervals, chainTableName) {
   const queryStr = `
   (SELECT
     %s as week,
@@ -150,46 +109,48 @@ async function dbQueryDeveloperActivityDataset(periods, chainTableName) {
   AND t.to IS NULL)
   `;
   // generate combined query to get dev activity within each time period
-  const union = Array(periods.length)
+  const union = Array(intervals.length)
     .fill(queryStr)
     .join('UNION')
-    .concat(periods.length > 1 ? 'ORDER BY week DESC' : '');
+    .concat('ORDER BY week DESC');
   // parameters for query string interpolation
-  const formatParams = periods.flatMap(([dateFrom, dateTo], i) => 
+  const formatParams = intervals.flatMap(([dateFrom, dateTo], i) => 
     ([i + 1, chainTableName, dateFrom, dateTo]));
   const query = format(union, ...formatParams);
-  console.log(query);
   return db.query(query);
 }
 
-function roundDateToDayNumber(dateParam) {
-  const date = new Date(dateParam);
-  date.setHours(0);
-  date.setMinutes(0);
-  date.setSeconds(0);
-  date.setMilliseconds(0);
-  return date;
+async function queryDeveloperActivity(
+  startDate,
+  endDate,
+  chain = 'rsk_mainnet',
+) {
+  const { timeIntervals } = getTimeIntervals(startDate, endDate, 1);
+  const chainTableName = getChainTableName(chain);
+  const queryResult = await dbQueryDeveloperActivity(timeIntervals, chainTableName);
+  if (queryResult.rowCount === 0) {
+    return {
+      deployment_tx_count: 0,
+      deployment_account_count: 0,
+    };
+  }
+  return {
+    deployment_tx_count:
+      parseInt(queryResult.rows[0].deployment_tx_count),
+    deployment_account_count:
+      parseInt(queryResult.rows[0].deployment_account_count),
+  };
 }
 
 async function queryDeveloperActivityMa(
-  apiDate,
+  startDate,
+  endDate,
   chain = 'rsk_testnet',
-  days = 7, // interval lenght
   periods = 4,
 ) {
-  const queryDate = apiDate ? new Date(apiDate) : new Date();
-  // if was unable to create a valid date instance
-  if (!(queryDate instanceof Date && !isNaN(queryDate)))
-    throw new Error(`date '${apiDate}' has unsupported format`);
-  if (isNaN(days) || days < 1 || days > 360)
-    throw new Error(`Illegal moving average interval length (days) parameter`);
-  if (isNaN(periods) || periods < 1 || periods > 20)
-    throw new Error(`Illegal moving average 'periods' parameter`);
-
-  const roundedDate = roundDateToDayNumber(queryDate);
-  const maPeriods = getPeriods(roundedDate, days, periods);
+  const { timeIntervals, intervalLength } = getTimeIntervals(startDate, endDate, periods);
   const chainTableName = getChainTableName(chain);
-  const queryResult = await dbQueryDeveloperActivityDataset(maPeriods, chainTableName);
+  const queryResult = await dbQueryDeveloperActivity(timeIntervals, chainTableName);
 
   if (queryResult.rowCount === 0)
     throw new Error('No transactions matching your request');
@@ -200,10 +161,11 @@ async function queryDeveloperActivityMa(
     Number(deployment_account_count));
 
   return {
-    start_date: maPeriods[0][0],
-    end_date: maPeriods[0][1],
-    days,
-    periods,
+    chain,
+    start_date: timeIntervals[0][0],
+    end_date: timeIntervals[0][1],
+    interval_length_days: intervalLength / 8.64e7, // ms per day
+    ma_calculation_periods: Number(periods),
     deployment_tx_count: {
       current: deployments[deployments.length - 1],
       wma: getMovingAverage('weighted', deployments),
