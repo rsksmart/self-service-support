@@ -116,10 +116,6 @@ function getPeriods(
   for (let i = 0; i < periods; i++) {
     const dateTo = new Date(startDate);
     dateTo.setDate(dateTo.getDate() - i * interval);
-    dateTo.setHours(0);
-    dateTo.setMinutes(0);
-    dateTo.setSeconds(0);
-    dateTo.setMilliseconds(0);
     const dateFrom = new Date(dateTo);
     dateFrom.setDate(dateFrom.getDate() - interval);
     dates.push([dateFrom, dateTo]);
@@ -127,14 +123,22 @@ function getPeriods(
   return dates;
 }
 
-function weightedMovingAverage(data = []) {
-  // sum of the data array indices
-  const sum = [...data.keys()].reduce((p, c) => p + c + 1, 0);
-  const reducer = (p, c, i) => p + (c * (i + 1) / sum);
+function getMovingAverage(type = 'simple', data = []) {
+  let reducer;
+  switch (type) {
+    case 'weighted':
+      // sum of the data array indices
+      const sum = [...data.keys()].reduce((p, c) => p + c + 1, 0);
+      reducer = (p, c, i) => p + (c * (i + 1) / sum);
+      break;
+    case 'simple':
+    default:
+      reducer = (p, c) => p + c / data.length;
+  }
   return Number(data.reduce(reducer, 0).toFixed(2));
 }
 
-async function dbQueryDeveloperActivityWma(periods, chainTableName) {
+async function dbQueryDeveloperActivityDataset(periods, chainTableName) {
   const queryStr = `
   (SELECT
     %s as week,
@@ -149,40 +153,72 @@ async function dbQueryDeveloperActivityWma(periods, chainTableName) {
   const union = Array(periods.length)
     .fill(queryStr)
     .join('UNION')
-    .concat('ORDER BY week DESC');
+    .concat(periods.length > 1 ? 'ORDER BY week DESC' : '');
   // parameters for query string interpolation
   const formatParams = periods.flatMap(([dateFrom, dateTo], i) => 
     ([i + 1, chainTableName, dateFrom, dateTo]));
   const query = format(union, ...formatParams);
-  const queryResult = await db.query(query);
-  if (queryResult.rowCount === 0) {
-    return {
-      deployment_tx_count: 0,
-      deployment_account_count: 0,
-    };
-  }
-  // calculate weighted Moving Averages from the received data sets
-  return {
-    deployment_tx_count: weightedMovingAverage(queryResult.rows.map(({ deployment_tx_count }) => deployment_tx_count)),
-    deployment_account_count: weightedMovingAverage(queryResult.rows.map(({ deployment_account_count }) => deployment_account_count)),
-  };
+  console.log(query);
+  return db.query(query);
 }
 
-async function queryDeveloperActivityWma(
+function roundDateToDayNumber(dateParam) {
+  const date = new Date(dateParam);
+  date.setHours(0);
+  date.setMinutes(0);
+  date.setSeconds(0);
+  date.setMilliseconds(0);
+  return date;
+}
+
+async function queryDeveloperActivityMa(
   apiDate,
   chain = 'rsk_testnet',
+  days = 7, // interval lenght
+  periods = 4,
 ) {
   const queryDate = apiDate ? new Date(apiDate) : new Date();
   // if was unable to create a valid date instance
   if (!(queryDate instanceof Date && !isNaN(queryDate)))
     throw new Error(`date '${apiDate}' has unsupported format`);
-  const periods = getPeriods(queryDate, 7, 4);
+  if (isNaN(days) || days < 1 || days > 360)
+    throw new Error(`Illegal moving average interval length (days) parameter`);
+  if (isNaN(periods) || periods < 1 || periods > 20)
+    throw new Error(`Illegal moving average 'periods' parameter`);
+
+  const roundedDate = roundDateToDayNumber(queryDate);
+  const maPeriods = getPeriods(roundedDate, days, periods);
   const chainTableName = getChainTableName(chain);
-  return dbQueryDeveloperActivityWma(periods, chainTableName);
+  const queryResult = await dbQueryDeveloperActivityDataset(maPeriods, chainTableName);
+
+  if (queryResult.rowCount === 0)
+    throw new Error('No transactions matching your request');
+
+  const deployments = queryResult.rows.map(({ deployment_tx_count }) => 
+    Number(deployment_tx_count));
+  const accounts = queryResult.rows.map(({ deployment_account_count }) => 
+    Number(deployment_account_count));
+
+  return {
+    start_date: maPeriods[0][0],
+    end_date: maPeriods[0][1],
+    days,
+    periods,
+    deployment_tx_count: {
+      current: deployments[deployments.length - 1],
+      wma: getMovingAverage('weighted', deployments),
+      sma: getMovingAverage('simple', deployments),
+    },
+    deployment_account_count: {
+      current: accounts[accounts.length - 1],
+      wma: getMovingAverage('weighted', accounts),
+      sma: getMovingAverage('simple', accounts),
+    },
+  };
 }
 
 module.exports = {
   queryAllActivity,
   queryDeveloperActivity,
-  queryDeveloperActivityWma,
+  queryDeveloperActivityMa,
 };
