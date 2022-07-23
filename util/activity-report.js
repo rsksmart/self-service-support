@@ -1,3 +1,5 @@
+const getMovingAverage = require('./moving-average.js');
+
 const db = require('../dbPool.js');
 const format = require('pg-format');
 
@@ -54,10 +56,10 @@ generates time periods to query past activities:
   [ 2022-07-06T22:00:00.000Z, 2022-07-13T22:00:00.000Z ],
 ] 
 */
-function getTimeIntervals(
+function getWindows(
   apiStartDate,
   apiEndDate,
-  periods, 
+  windowsAmount, 
 ) {
   const startDate = new Date(apiStartDate);
   const endDate = new Date(apiEndDate);
@@ -66,35 +68,20 @@ function getTimeIntervals(
     throw new Error(`date has unsupported format`);
   if (startDate >= endDate)
     throw new Error('start day should be earlier than end date');
-  if (isNaN(periods) || periods < 1 || periods > 20)
-    throw new Error(`Illegal moving average 'periods' parameter`);
+  if (isNaN(windowsAmount) || windowsAmount < 1 || windowsAmount > 20)
+    throw new Error(`Illegal moving average 'windows' parameter`);
 
-  const intervalLength = endDate - startDate;
-  const timeIntervals = [];
-  for (let i = 0; i < periods; i++) {
-    const dateTo = new Date(endDate - intervalLength * i);
-    const dateFrom = new Date(dateTo - intervalLength);
-    timeIntervals.push([dateFrom, dateTo]);
+  const windowLength = endDate - startDate;
+  const windows = [];
+  for (let i = 0; i < windowsAmount; i++) {
+    const dateTo = new Date(endDate - windowLength * i);
+    const dateFrom = new Date(dateTo - windowLength);
+    windows.push([dateFrom, dateTo]);
   }
   return {
-    timeIntervals,
-    intervalLength,
+    windows,
+    windowLength,
   };
-}
-
-function getMovingAverage(type = 'simple', data = []) {
-  let reducer;
-  switch (type) {
-    case 'weighted':
-      // sum of the data array indices
-      const sum = [...data.keys()].reduce((p, c) => p + c + 1, 0);
-      reducer = (p, c, i) => p + (c * (i + 1) / sum);
-      break;
-    case 'simple':
-    default:
-      reducer = (p, c) => p + c / data.length;
-  }
-  return Number(data.reduce(reducer, 0).toFixed(2));
 }
 
 async function dbQueryDeveloperActivity(intervals, chainTableName) {
@@ -123,34 +110,12 @@ async function dbQueryDeveloperActivity(intervals, chainTableName) {
 async function queryDeveloperActivity(
   startDate,
   endDate,
-  chain = 'rsk_mainnet',
-) {
-  const { timeIntervals } = getTimeIntervals(startDate, endDate, 1);
-  const chainTableName = getChainTableName(chain);
-  const queryResult = await dbQueryDeveloperActivity(timeIntervals, chainTableName);
-  if (queryResult.rowCount === 0) {
-    return {
-      deployment_tx_count: 0,
-      deployment_account_count: 0,
-    };
-  }
-  return {
-    deployment_tx_count:
-      parseInt(queryResult.rows[0].deployment_tx_count),
-    deployment_account_count:
-      parseInt(queryResult.rows[0].deployment_account_count),
-  };
-}
-
-async function queryDeveloperActivityMa(
-  startDate,
-  endDate,
   chain = 'rsk_testnet',
-  periods = 4,
+  windowsAmount = 4,
 ) {
-  const { timeIntervals, intervalLength } = getTimeIntervals(startDate, endDate, periods);
+  const { windows, windowLength } = getWindows(startDate, endDate, windowsAmount);
   const chainTableName = getChainTableName(chain);
-  const queryResult = await dbQueryDeveloperActivity(timeIntervals, chainTableName);
+  const queryResult = await dbQueryDeveloperActivity(windows, chainTableName);
 
   if (queryResult.rowCount === 0)
     throw new Error('No transactions matching your request');
@@ -162,19 +127,21 @@ async function queryDeveloperActivityMa(
 
   return {
     chain,
-    start_date: timeIntervals[0][0],
-    end_date: timeIntervals[0][1],
-    interval_length_days: intervalLength / 8.64e7, // ms per day
-    ma_calculation_periods: Number(periods),
+    start_date: windows[0][0],
+    end_date: windows[0][1],
+    window_length_days: windowLength / 8.64e7, // ms per day
+    windows_amount: Number(windowsAmount),
     deployment_tx_count: {
       current: deployments[deployments.length - 1],
-      wma: getMovingAverage('weighted', deployments),
       sma: getMovingAverage('simple', deployments),
+      ema: getMovingAverage('exponential', deployments),
+      wma: getMovingAverage('weighted', deployments),
     },
     deployment_account_count: {
       current: accounts[accounts.length - 1],
-      wma: getMovingAverage('weighted', accounts),
       sma: getMovingAverage('simple', accounts),
+      ema: getMovingAverage('exponential', accounts),
+      wma: getMovingAverage('weighted', accounts),
     },
   };
 }
@@ -182,5 +149,4 @@ async function queryDeveloperActivityMa(
 module.exports = {
   queryAllActivity,
   queryDeveloperActivity,
-  queryDeveloperActivityMa,
 };
