@@ -174,7 +174,18 @@ Query Parameters:
 - `end-date`: Get stats up to and including this date
 - `chain`: Possible values are `rsk_mainnet` and `rsk_testnet`
 If chain is not specified, assumes 'rsk_testnet' by default
-- `periods`: number of time periods (including the current) to take in account while calculating the averages
+- `windows`: number of windows (time periods including the current) to take in account while calculating the averages
+
+Return properties:
+
+- `start_date`, `end_date`, `chain`, `window`: indicate the corresponding query params
+- `window_length_days`: length of the time period in days between the start and end dates
+- `deployment_tx_count`: number of deployment transactions within the specified time period
+- `deployment_account_count`: number of unique deployers
+- `current`: momentary value of the calculated parameter
+- `sma`: simple moving average approximation of the momentary value
+- `ema`: exponential moving average approximation of the momentary value
+- `wma`: weighted moving average approximation of the momentary value
 
 ## Author
 
