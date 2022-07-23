@@ -134,12 +134,15 @@ router.get('/rsk-activity-report/all-activity', async (req, res) => {
 
 router.get('/rsk-activity-report/developer-activity', async (req, res) => {
   try {
-    const { startDate, endDate, chain } = req.query;
-    const allActivityReport = await rskActivityReport
+    const { chain } = req.query;
+    const startDate = req.query['start-date'];
+    const endDate = req.query['end-date'];
+
+    const activityReport = await rskActivityReport
       .queryDeveloperActivity(startDate, endDate, chain);
     res.status(200).json({
       endPointVersion: 2,
-      ...allActivityReport
+      ...activityReport
     });
   } catch (error) {
     res.status(400).json({
@@ -148,5 +151,31 @@ router.get('/rsk-activity-report/developer-activity', async (req, res) => {
     });
   }
 });
+
+router.get('/rsk-activity-report/developer-activity-ma', async (req, res) => {
+  try {
+    const { chain, periods } = req.query;
+    const startDate = req.query['start-date'];
+    const endDate = req.query['end-date'];
+
+    const activityReport = await rskActivityReport
+      .queryDeveloperActivityMa(
+        startDate,
+        endDate,
+        chain,
+        periods,
+      );
+    res.status(200).json({
+      endPointVersion: 1,
+      ...activityReport
+    });
+  } catch (error) {
+    res.status(400).json({
+      endPointVersion: 1,
+      error: error.message,
+    });
+  }
+});
+
 
 module.exports = router;
