@@ -141,30 +141,15 @@ Accept: application/json
 
 ```
 
-## Query to work out developer activity
+
+## Query to work out developer activity including Moving Averages
 
 Counts the number of deployment transactions,
 and unique addresses making them within a specified date range.
-
-```
-GET /api/v1/rsk-activity-report/developer-activity?start-date=2022.04.01&end-date=2022.05.01&chain=rsk_testnet
-Accept: application/json
-
-```
-
-Query Parameters:
-
-- `start-date`: Get stats from and including this date
-- `end-date`: Get stats up to and including this date
-- `chain`: Possible values are `rsk_mainnet` and `rsk_testnet`
-If chain is not specified, assumes 'rsk_mainnet' by default
-
-## Query to work out developer activity Moving Averages
-
 Calculates the simple, weighted and exponential moving averages for the number of deployment transactions, and unique addresses within the specified date range.
 
 ```
-GET /api/v1/rsk-activity-report/developer-activity-ma?start-date=2022.04.01&end-date=2022.05.01&chain=rsk_testnet&periods=4
+GET /api/v1/rsk-activity-report/developer-activity?start-date=2022.04.01&end-date=2022.05.01&chain=rsk_testnet&periods=4
 Accept: application/json
 
 ```
@@ -174,7 +159,18 @@ Query Parameters:
 - `end-date`: Get stats up to and including this date
 - `chain`: Possible values are `rsk_mainnet` and `rsk_testnet`
 If chain is not specified, assumes 'rsk_testnet' by default
-- `periods`: number of time periods (including the current) to take in account while calculating the averages
+- `windows`: number of windows (time periods including the current) to take in account while calculating the averages
+
+Return properties:
+
+- `start_date`, `end_date`, `chain`, `window`: indicate the corresponding query params
+- `window_length_days`: length of the time period in days between the start and end dates
+- `deployment_tx_count`: number of deployment transactions within the specified time period
+- `deployment_account_count`: number of unique deployers
+- `current`: momentary value of the calculated parameter
+- `sma`: simple moving average approximation of the momentary value
+- `ema`: exponential moving average approximation of the momentary value
+- `wma`: weighted moving average approximation of the momentary value
 
 ## Author
 
