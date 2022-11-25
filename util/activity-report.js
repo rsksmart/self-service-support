@@ -146,7 +146,33 @@ async function queryDeveloperActivity(
   };
 }
 
+async function queryAvgTxCost({ blocks = 100, chain = 'rsk_mainnet' }) {
+  if (!(blocks > 0 && blocks <= 1000))
+    throw new Error(`Illegal number of blocks: ${blocks}`);
+  const queryStr = `
+    WITH last_blocks AS (
+      SELECT * FROM %I.blocks b
+      ORDER BY b.height DESC
+      LIMIT %s
+    )
+    SELECT AVG(t.gas_price * t.gas_spent / 10^18) AS avg_tx_cost
+    FROM %I.block_transactions t
+    INNER JOIN last_blocks l
+    ON t.block_id = l.id
+    WHERE t.gas_spent != 0 AND t.gas_price != 0
+  `;
+  const chainTableName = getChainTableName(chain);
+  const query = format(queryStr, chainTableName, blocks, chainTableName);
+  const res = await db.query(query);
+  return {
+    blocks,
+    chain,
+    avg_tx_cost: res.rows[0]?.avg_tx_cost || 0,
+  };
+}
+
 module.exports = {
   queryAllActivity,
   queryDeveloperActivity,
+  queryAvgTxCost,
 };
