@@ -149,6 +149,12 @@ async function queryDeveloperActivity(
 async function queryAvgTxCost({ blocks = 100, chain = 'rsk_mainnet' }) {
   if (!(blocks > 0 && blocks <= 1000))
     throw new Error(`Illegal number of blocks: ${blocks}`);
+  /* 
+    PosgreSQL query:
+    1. get the last %s blocks
+    2. populate blocks with current RBTC/USD rates
+    3. get average gas fees in both RBTC and USD
+  */
   const queryStr = `
     WITH last_blocks AS (
       SELECT b.id, b.signed_at
