@@ -1,9 +1,11 @@
+const { join } = require('path');
 require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
 
 const apiRouter = require('./api-router.js');
+const qrcodeRouter = require('./qrcode-router.js');
 
 const server = express();
 
@@ -16,10 +18,7 @@ if (permissiveCors) {
   };
 } else {
   corsOptions = {
-    origin: [
-      'https://rsk.co',
-      /\.rsk\.co$/,
-    ],
+    origin: ['https://rsk.co', /\.rsk\.co$/],
     optionsSuccessStatus: 200,
   };
 }
@@ -33,7 +32,11 @@ server.get('/api/status', (req, res) => {
 });
 
 server.use('/api/v1', apiRouter);
+// qr-code generator
+// server.use('/qrcode', qrcodeRouter);
+server.use('/qrcode', express.static(join(__dirname, 'qrcode')));
 
-server.use(express.static(__dirname + '/static'));
+// server.use(express.static(join(__dirname, 'qrcode')));
+// server.use(express.static(join(__dirname, 'static')));
 
 module.exports = server;
