@@ -151,23 +151,41 @@ async function queryAvgTxCost({ blocks = 100, chain = 'rsk_mainnet' }) {
     throw new Error(`Illegal number of blocks: ${blocks}`);
   const queryStr = `
     WITH last_blocks AS (
-      SELECT * FROM %I.blocks b
+      SELECT b.id, b.signed_at
+      FROM %I.blocks b
       ORDER BY b.height DESC
       LIMIT %s
+    ), last_blocks_with_usd_rates AS (
+      SELECT lb.id, tp.price_in_usd 
+      FROM reports.token_prices tp
+      INNER JOIN last_blocks lb
+      ON DATE_TRUNC('day', tp.dt) = DATE_TRUNC('day', lb.signed_at)
+      WHERE tp.chain_id = 30 
+      AND tp.coingecko_token_id = 'rootstock'
     )
-    SELECT AVG(t.gas_price * t.gas_spent / 10^18) AS avg_tx_cost
+    SELECT 
+    AVG(t.fees_paid / 10^18) AS avg_tx_cost_rbtc,
+    AVG(t.fees_paid / 10^18 * lb.price_in_usd) AS avg_tx_cost_usd
     FROM %I.block_transactions t
-    INNER JOIN last_blocks l
-    ON t.block_id = l.id
-    WHERE t.gas_spent != 0 AND t.gas_price != 0
+    INNER JOIN last_blocks_with_usd_rates lb
+    ON t.block_id = lb.id
+    WHERE t.fees_paid != 0  
   `;
   const chainTableName = getChainTableName(chain);
   const query = format(queryStr, chainTableName, blocks, chainTableName);
-  const res = await db.query(query);
+  const [avgCosts] = (await db.query(query)).rows;
+  // setting default values in case Covalent DB shuts down
+  const defaultTxCost = {
+    usd: 0.08150987210454078,
+    rbtc: 0.000004918220924135874,
+  };
   return {
     blocks,
     chain,
-    avg_tx_cost: res.rows[0]?.avg_tx_cost || 0,
+    avg_tx_cost: {
+      usd: avgCosts?.avg_tx_cost_usd || defaultTxCost.usd,
+      rbtc: avgCosts?.avg_tx_cost_rbtc || defaultTxCost.rbtc,
+    },
   };
 }
 
