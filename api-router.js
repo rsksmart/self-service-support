@@ -159,4 +159,20 @@ router.get('/rsk-activity-report/developer-activity', async (req, res) => {
 });
 
 
+router.get('/rsk-activity-report/avg-tx-cost', async (req, res) => {
+  const endPointVersion = 1;
+  try {
+    const txCostReport = await rskActivityReport.queryAvgTxCost(req.query);
+    res.status(200).json({
+      endPointVersion,
+      ...txCostReport,
+    });
+  } catch (error) {
+    res.status(400).json({
+      endPointVersion,
+      error: error.message,
+    });
+  }
+});
+
 module.exports = router;
