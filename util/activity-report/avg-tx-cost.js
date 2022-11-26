@@ -2,9 +2,7 @@ const format = require('pg-format');
 const db = require('../../dbPool.js');
 const { getChainTableName } = require('./util.js');
 
-async function queryAvgTxCost({ blocks = 100, chain = 'rsk_mainnet' }) {
-  if (!(blocks > 0 && blocks <= 1000))
-    throw new Error(`Illegal number of blocks: ${blocks}`);
+async function dbQueryAvgTxCost(blocks, chainTableName) {
   /* 
     PosgreSQL query:
     1. get the last %s blocks
@@ -33,9 +31,15 @@ async function queryAvgTxCost({ blocks = 100, chain = 'rsk_mainnet' }) {
     ON t.block_id = lb.id
     WHERE t.fees_paid != 0  
   `;
-  const chainTableName = getChainTableName(chain);
   const query = format(queryStr, chainTableName, blocks, chainTableName);
-  const [avgCosts] = (await db.query(query)).rows;
+  return (await db.query(query)).rows[0];
+}
+
+async function queryAvgTxCost({ blocks = 100, chain = 'rsk_mainnet' }) {
+  if (!(blocks > 0 && blocks <= 1000))
+    throw new Error(`Illegal number of blocks: ${blocks}`);
+  const chainTableName = getChainTableName(chain);
+  const avgCosts = await dbQueryAvgTxCost(blocks, chainTableName);
   // setting default values in case Covalent DB shuts down
   const defaultTxCost = {
     usd: 0.08150987210454078,
