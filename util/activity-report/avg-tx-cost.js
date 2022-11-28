@@ -4,17 +4,11 @@ const db = require('../../dbPool.js');
 const { getChainTableName } = require('./util.js');
 
 // cache time to live
-const shortStorageTtl = 600; // seconds
-const databaseDelayLimit = 3; // seconds
+const cacheTtl = 10; // seconds
 
 const cache = new NodeCache();
-/* 
-  I use 2 types of cache storages:
-  - short term storage (ttl is specified at the file top)
-  - long term storage (unlimited time)
- */
-const getShortStorageId = (chain) => `avg-tx-cost-short-storage-${chain}`;
-const getLongStorageId = (chain) => `avg-tx-cost-long-storage-${chain}`;
+
+const getCacheId = (chain) => `avg-tx-cost-storage-${chain}`;
 
 async function dbQueryAvgTxCost(blocks, chainTableName) {
   /* 
@@ -54,26 +48,28 @@ async function dbQueryAvgTxCost(blocks, chainTableName) {
   };
 }
 
-function getFromDbOrLongStorage(blocks, chainTableName) {
+function updateCache(blocks, chainTableName) {
   return new Promise((resolve) => {
-    const getCached = () =>
-      resolve(cache.get(getLongStorageId(chainTableName)));
-    // try to get db response before the deadline
+    const cachedData = cache.get(getCacheId(chainTableName));
+    resolve(cachedData);
+    // after resolving the promise (returning the cached data)
+    // try to read from the DB if the cached data was older than N seconds
     (async () => {
       try {
+        const ttl = new Date(); // cache time to live
+        ttl.setSeconds(ttl.getSeconds() - cacheTtl);
+        // don't do DB query if cached data is newer than TTL
+        if (ttl < new Date(cachedData?.time ?? 0)) return;
         const avgTxCost = await dbQueryAvgTxCost(blocks, chainTableName);
         // each time we are able to successfully get the query result
         // store these values + the timestamp in memory
-        cache.set(getLongStorageId(chainTableName), avgTxCost);
-        resolve(avgTxCost);
+        cache.set(getCacheId(chainTableName), avgTxCost);
       } catch (error) {
-        // each time we are unsuccessful in making the query (e.g. DB went down)
-        // retrieve the values plus timestamp from the long storage
-        getCached();
+        console.log(error);
+        // if any error occurs, the function simply  doesn't
+        // record any new data to the cache
       }
     })();
-    // if waiting longer than deadline, read from the long storage
-    setTimeout(getCached, databaseDelayLimit * 1000);
   });
 }
 
@@ -91,18 +87,8 @@ function verifyParams(blocks) {
 async function queryAvgTxCost({ blocks = 100, chain = 'rsk_mainnet' }) {
   verifyParams(blocks);
   const chainTableName = getChainTableName(chain);
-  // Try to read from short term storage.
-  // Less than 10 minutes after last DB query
-  // --> return cached value, no query performed
-  let avgTxCost = cache.get(getShortStorageId(chainTableName));
-  // When the short term storage ttl is expired:
-  // 10 minutes or longer --> perform the query, and return new value
-  if (!avgTxCost) {
-    // read from either DB or long storage (whichever available)
-    avgTxCost = await getFromDbOrLongStorage(blocks, chainTableName);
-    // write received data to short storage
-    cache.set(getShortStorageId(chainTableName), avgTxCost, shortStorageTtl);
-  }
+  // returns no data at the first call
+  const avgTxCost = await updateCache(blocks, chainTableName);
   return {
     blocks,
     chain,
