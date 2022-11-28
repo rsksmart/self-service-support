@@ -1,4 +1,4 @@
-function round(number = 0.00000) {
+function round(number = 0.0) {
   return Number(number.toFixed(2));
 }
 /**
@@ -30,9 +30,9 @@ function getMovingAverage(type = 'simple', data = []) {
     */
     case 'weighted':
       // sum of the data array indices
-      const sum = data.length * (data.length + 1) / 2;
-      reducer = (partialSum, currValue, index) => 
-        partialSum + (currValue * (index + 1) / sum);
+      const sum = (data.length * (data.length + 1)) / 2;
+      reducer = (partialSum, currValue, index) =>
+        partialSum + (currValue * (index + 1)) / sum;
       break;
     /* 
     Calculating an EMA involves three steps. The first step is to determine the SMA for the period, which is the first data point in the EMA formula. Then, a multiplier is calculated by taking 2 divided by the number of periods plus 1. The final step is to take the closing price minus the prior day EMA times the multiplier plus the prior day EMA.
@@ -48,7 +48,7 @@ function getMovingAverage(type = 'simple', data = []) {
     */
     case 'simple':
     default:
-      reducer = (partialSum, currentValue) => 
+      reducer = (partialSum, currentValue) =>
         partialSum + currentValue / data.length;
   }
   return round(data.reduce(reducer, 0));
