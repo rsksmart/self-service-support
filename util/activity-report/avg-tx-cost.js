@@ -4,7 +4,7 @@ const db = require('../../dbPool.js');
 const { getChainTableName } = require('./util.js');
 
 // cache time to live
-const cacheTtl = 10; // seconds
+const cacheTtl = 600; // seconds
 
 const cache = flatCache.load('avg-tx-cost');
 
