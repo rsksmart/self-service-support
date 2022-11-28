@@ -1,14 +1,12 @@
 const format = require('pg-format');
-const NodeCache = require('node-cache');
+const flatCache = require('flat-cache');
 const db = require('../../dbPool.js');
 const { getChainTableName } = require('./util.js');
 
 // cache time to live
 const cacheTtl = 10; // seconds
 
-const cache = new NodeCache();
-
-const getCacheId = (chain) => `avg-tx-cost-storage-${chain}`;
+const cache = flatCache.load('avg-tx-cost');
 
 async function dbQueryAvgTxCost(blocks, chainTableName) {
   /* 
@@ -50,7 +48,7 @@ async function dbQueryAvgTxCost(blocks, chainTableName) {
 
 function updateCache(blocks, chainTableName) {
   return new Promise((resolve) => {
-    const cachedData = cache.get(getCacheId(chainTableName));
+    const cachedData = cache.getKey(chainTableName);
     resolve(cachedData);
     // after resolving the promise (returning the cached data)
     // try to read from the DB if the cached data was older than N seconds
@@ -63,9 +61,12 @@ function updateCache(blocks, chainTableName) {
         const avgTxCost = await dbQueryAvgTxCost(blocks, chainTableName);
         // each time we are able to successfully get the query result
         // store these values + the timestamp in memory
-        cache.set(getCacheId(chainTableName), avgTxCost);
+        // cache.set(getCacheId(chainTableName), avgTxCost);
+        cache.setKey(chainTableName, avgTxCost);
+        // record cache to a JSON file in `node_modules/flat-cache/.cache/` folder
+        // so that the cashed values could be recovered after a server shut down
+        cache.save(true);
       } catch (error) {
-        console.log(error);
         // if any error occurs, the function simply  doesn't
         // record any new data to the cache
       }
