@@ -10,7 +10,7 @@ function verifyChain(chain) {
 }
 
 function getChainTableName(chain) {
-  verifyChain();
+  verifyChain(chain);
   return chainTableNames[chain];
 }
 

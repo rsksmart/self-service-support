@@ -69,6 +69,7 @@ async function updateCache(req) {
       ...dbData,
     });
   } catch (error) {
+    console.log(error);
     // don't write data to the cache
   }
 }
