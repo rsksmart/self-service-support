@@ -8,10 +8,12 @@ module.exports = {
     queryStringParams: [
       {
         name: 'chain',
+        defaultValue: 'rsk_mainnet',
         verify: verifyChain,
       },
       {
         name: 'blocks',
+        defaultValue: '100',
         verify: avgTxCost.verifyBlocks,
       },
     ],

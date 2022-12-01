@@ -1,7 +1,7 @@
 const flatCache = require('flat-cache');
-const apiConfig = require('./api-config.js');
 const url = require('url');
 const qs = require('querystring');
+const apiConfig = require('./api-config.js');
 
 const cache = flatCache.load('rootstock-self-service-support');
 
@@ -27,9 +27,9 @@ function getQsParams(req) {
 
 function getParamValues(req) {
   return getQsParams(req).reduce(
-    (prev, { name }) => ({
+    (prev, { name, defaultValue }) => ({
       ...prev,
-      [name]: req.query[name],
+      [name]: req.query[name] ?? defaultValue,
     }),
     {},
   );
@@ -45,8 +45,8 @@ function getCacheKey(req) {
 }
 
 function verifyParams(req) {
-  getQsParams(req).forEach(({ name, verify }) => {
-    verify(req.query[name]);
+  getQsParams(req).forEach(({ name, verify, defaultValue }) => {
+    verify(req.query[name] ?? defaultValue);
   });
 }
 
