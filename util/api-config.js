@@ -1,5 +1,8 @@
 const { verifyChain } = require('./verify-chain.js');
 const avgTxCost = require('./activity-report/avg-tx-cost.js');
+const allActivity = require('./activity-report/all-activity.js');
+
+const defaultTime = new Date(0);
 
 module.exports = {
   '/api/v1/rsk-activity-report/avg-tx-cost': {
@@ -16,9 +19,27 @@ module.exports = {
       },
     ],
     defaultValues: {
-      time: new Date(0),
+      time: defaultTime,
       vg_tx_cost_rbtc: 0.00000832480954068274,
       avg_tx_cost_usd: 0.14281035946040882,
+    },
+  },
+  '/api/v1/rsk-activity-report/all-activity': {
+    cacheTtl: 600,
+    queryDb: allActivity.queryDb,
+    queryStringParams: [
+      {
+        name: 'days',
+        verify: allActivity.verifyDays,
+      },
+      {
+        name: 'chain',
+        verify: verifyChain,
+      },
+    ],
+    defaultValues: {
+      time: defaultTime,
+      accounts: 1628,
     },
   },
 };

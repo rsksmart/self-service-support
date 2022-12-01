@@ -8,7 +8,7 @@ const { cacheMiddleware } = require('./util/cache-middleware.js');
 
 const router = express.Router();
 
-router.use('/rsk-activity-report/avg-tx-cost', cacheMiddleware);
+router.use('/rsk-activity-report', cacheMiddleware);
 
 const allowedFromNetworks = [
   'rsk-mainnet',
@@ -113,7 +113,7 @@ router.get('/rsk-address-report/protocol-usage', async (req, res) => {
   }
 });
 
-router.get('/rsk-activity-report/all-activity', async (req, res) => {
+/* router.get('/rsk-activity-report/all-activity', async (req, res) => {
   try {
     const { days, chain } = req.query;
     const allActivityReport = await rskActivityReport.queryAllActivity(
@@ -130,7 +130,7 @@ router.get('/rsk-activity-report/all-activity', async (req, res) => {
       error: error.message,
     });
   }
-});
+}); */
 
 router.get('/rsk-activity-report/developer-activity', async (req, res) => {
   const endPointVersion = 3;
