@@ -2,7 +2,7 @@ const { verifyChain } = require('./verify-chain.js');
 const avgTxCost = require('./activity-report/avg-tx-cost.js');
 
 module.exports = {
-  'api/v1/rsk-activity-report/avg-tx-cost': {
+  '/api/v1/rsk-activity-report/avg-tx-cost': {
     cacheTtl: 600, // seconds
     queryDb: avgTxCost.queryDb,
     queryStringParams: [

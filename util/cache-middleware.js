@@ -1,14 +1,15 @@
 const flatCache = require('flat-cache');
 const apiConfig = require('./api-config.js');
+const url = require('url');
 
 const cache = flatCache.load('rootstock-self-service-support');
 
-function getCacheKey(req) {
-  return (req.baseUrl + req.path).replace(/^\/|\/$/g, '');
+function getPath(req) {
+  return url.parse(req.originalUrl).pathname;
 }
 
 function getParamValues(req) {
-  const { queryStringParams } = apiConfig[getCacheKey(req)];
+  const { queryStringParams } = apiConfig[getPath(req)];
   return queryStringParams.reduce(
     (prev, { name }) => ({
       ...prev,
@@ -19,7 +20,7 @@ function getParamValues(req) {
 }
 
 function verifyParams(req) {
-  const { queryStringParams } = apiConfig[getCacheKey(req)];
+  const { queryStringParams } = apiConfig[getPath(req)];
   // verify each parameter and return object containing all param names and their values
   queryStringParams.forEach(({ name, verify }) => {
     verify(req.query[name]);
@@ -27,17 +28,17 @@ function verifyParams(req) {
 }
 
 function readCache(req) {
-  return cache.getKey(getCacheKey(req))?.[req.query.chain];
+  return cache.getKey(getPath(req))?.[req.query.chain];
 }
 
 async function updateCache(req) {
   try {
     const { chain } = req.query;
-    const cacheKey = getCacheKey(req);
+    const cacheKey = getPath(req);
     const { cacheTtl, queryDb } = apiConfig[cacheKey];
     const ttl = new Date(); // cache time to live
     ttl.setSeconds(ttl.getSeconds() - cacheTtl);
-    const cacheData = cache.getKey(getCacheKey(req));
+    const cacheData = cache.getKey(getPath(req));
     // don't do DB query if cached data is newer than TTL
     if (ttl < new Date(cacheData?.[chain]?.time ?? 0)) return;
     const params = getParamValues(req);
@@ -51,6 +52,8 @@ async function updateCache(req) {
         ...dbData,
       },
     });
+    console.log('saved cache');
+    console.log(cache.all());
   } catch (error) {
     // don't write data to the cache
   }
