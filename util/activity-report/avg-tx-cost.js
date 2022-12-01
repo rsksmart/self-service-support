@@ -3,7 +3,6 @@ const db = require('../../dbPool.js');
 const { chainTableNames } = require('../constants.js');
 
 async function dbQueryAvgTxCost({ blocks, chain }) {
-  console.log('invoke DB function');
   /* 
     PosgreSQL query:
     1. get the last %s blocks

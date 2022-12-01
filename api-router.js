@@ -1,41 +1,39 @@
 const express = require('express');
-const flatCache = require('flat-cache');
 
 const calcTxInfo = require('./util/calc-tx-info.js');
 const rskTokenBridgeController = require('./rsk-token-bridge-controller.js');
 const getAddressReport = require('./util/address-report.js');
 const rskActivityReport = require('./util/activity-report/index.js');
 const {
-  updateCache,
   verifyParams,
+  readCache,
+  updateCache,
   getParamValues,
 } = require('./util/functions.js');
 
 const router = express.Router();
-const cache = flatCache.load('rootstock-self-service-support');
 
 router.use(function (req, res, next) {
   console.log(new Date());
   next();
 });
 
-// return cached data immediately after receiving a request
-router.use('/rsk-activity-report/', async (req, res) => {
-  req.cacheKey = (req.baseUrl + req.path).replace(/^\/|\/$/g, '');
-  req.cache = cache;
+// universal cache handling middleware
+// returns cached data immediately after receiving a request
+// and then then tries to update cache from the DB
+router.use('/rsk-activity-report/avg-tx-cost', async (req, res) => {
   try {
     verifyParams(req);
-    const cacheData = cache.getKey(req.cacheKey)?.[req.query.chain];
     res.status(200).json({
       ...getParamValues(req),
-      ...cacheData,
+      ...readCache(req),
     });
-    await updateCache(req);
   } catch (error) {
     res.status(400).json({
       error: error.message,
     });
   }
+  await updateCache(req);
 });
 
 const allowedFromNetworks = [
