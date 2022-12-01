@@ -1,4 +1,4 @@
-const { verifyChain } = require('./verify-chain-qs-param.js');
+const { verifyChain } = require('./verify-chain.js');
 const avgTxCost = require('./activity-report/avg-tx-cost.js');
 
 module.exports = {

@@ -59,7 +59,7 @@ async function updateCache(req) {
 // universal cache handling middleware
 // returns cached data immediately after receiving a request
 // and then then tries to update cache from the DB
-async function getCacheData(req, res) {
+async function sendCachedResponse(req, res) {
   try {
     verifyParams(req);
     res.status(200).json({
@@ -75,5 +75,5 @@ async function getCacheData(req, res) {
 }
 
 module.exports = {
-  getCacheData,
+  sendCachedResponse,
 };

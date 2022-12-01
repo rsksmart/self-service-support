@@ -4,11 +4,11 @@ const calcTxInfo = require('./util/calc-tx-info.js');
 const rskTokenBridgeController = require('./rsk-token-bridge-controller.js');
 const getAddressReport = require('./util/address-report.js');
 const rskActivityReport = require('./util/activity-report/index.js');
-const { getCacheData } = require('./util/get-cache-data.js');
+const { sendCachedResponse } = require('./util/cache.js');
 
 const router = express.Router();
 
-router.use('/rsk-activity-report/avg-tx-cost', getCacheData);
+router.use('/rsk-activity-report/avg-tx-cost', sendCachedResponse);
 
 const allowedFromNetworks = [
   'rsk-mainnet',
