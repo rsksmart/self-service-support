@@ -10,9 +10,7 @@ function verifyChain(chain) {
 }
 
 function getChainTableName(chain) {
-  if (!chain || !chainTableNames[chain]) {
-    throw new Error(`chain '${chain}' is not supported`);
-  }
+  verifyChain();
   return chainTableNames[chain];
 }
 
