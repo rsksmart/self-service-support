@@ -1,5 +1,5 @@
 const flatCache = require('flat-cache');
-const endpointParams = require('./endpointParams.js');
+const endpointParams = require('./endpoint-params.js');
 
 const cache = flatCache.load('rootstock-self-service-support');
 
@@ -21,7 +21,9 @@ function getParamValues(req) {
 function verifyParams(req) {
   const { queryStringParams } = endpointParams[getCacheKey(req)];
   // verify each parameter and return object containing all param names and their values
-  queryStringParams.forEach(({ name, verify }) => verify(req.query[name]));
+  queryStringParams.forEach(({ name, verify }) => {
+    verify(req.query[name]);
+  });
 }
 
 function readCache(req) {
@@ -54,10 +56,24 @@ async function updateCache(req) {
   }
 }
 
+// universal cache handling middleware
+// returns cached data immediately after receiving a request
+// and then then tries to update cache from the DB
+async function getCacheData(req, res) {
+  try {
+    verifyParams(req);
+    res.status(200).json({
+      ...getParamValues(req),
+      ...readCache(req),
+    });
+  } catch (error) {
+    res.status(400).json({
+      error: error.message,
+    });
+  }
+  await updateCache(req);
+}
+
 module.exports = {
-  readCache,
-  updateCache,
-  verifyParams,
-  getParamValues,
-  getCacheKey,
+  getCacheData,
 };

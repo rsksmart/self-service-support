@@ -2,7 +2,18 @@ const format = require('pg-format');
 const db = require('../../dbPool.js');
 const { chainTableNames } = require('../constants.js');
 
-async function dbQueryAvgTxCost({ blocks, chain }) {
+function verifyBlocks(blocks) {
+  const blocksRange = {
+    lower: 1,
+    upper: 1000,
+  };
+  if (!(blocks >= blocksRange.lower && blocks <= blocksRange.upper))
+    throw new Error(
+      `Number of blocks should be within range ${blocksRange.lower} to ${blocksRange.upper}, specified value was: ${blocks}`,
+    );
+}
+
+async function queryDb({ blocks, chain }) {
   /* 
     PosgreSQL query:
     1. get the last %s blocks
@@ -39,5 +50,6 @@ async function dbQueryAvgTxCost({ blocks, chain }) {
 }
 
 module.exports = {
-  dbQueryAvgTxCost,
+  queryDb,
+  verifyBlocks,
 };

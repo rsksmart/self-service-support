@@ -4,37 +4,11 @@ const calcTxInfo = require('./util/calc-tx-info.js');
 const rskTokenBridgeController = require('./rsk-token-bridge-controller.js');
 const getAddressReport = require('./util/address-report.js');
 const rskActivityReport = require('./util/activity-report/index.js');
-const {
-  verifyParams,
-  readCache,
-  updateCache,
-  getParamValues,
-} = require('./util/functions.js');
+const { getCacheData } = require('./util/get-cache-data.js');
 
 const router = express.Router();
 
-router.use(function (req, res, next) {
-  console.log(new Date());
-  next();
-});
-
-// universal cache handling middleware
-// returns cached data immediately after receiving a request
-// and then then tries to update cache from the DB
-router.use('/rsk-activity-report/avg-tx-cost', async (req, res) => {
-  try {
-    verifyParams(req);
-    res.status(200).json({
-      ...getParamValues(req),
-      ...readCache(req),
-    });
-  } catch (error) {
-    res.status(400).json({
-      error: error.message,
-    });
-  }
-  await updateCache(req);
-});
+router.use('/rsk-activity-report/avg-tx-cost', getCacheData);
 
 const allowedFromNetworks = [
   'rsk-mainnet',
