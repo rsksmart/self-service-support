@@ -1,6 +1,6 @@
 const format = require('pg-format');
 const db = require('../../dbPool.js');
-const { chainTableNames } = require('../constants.js');
+const { getChainTableName } = require('../verify-chain.js');
 
 function verifyBlocks(blocks) {
   const blocksRange = {
@@ -42,7 +42,7 @@ async function queryDb({ blocks, chain }) {
     ON t.block_id = lb.id
     WHERE t.fees_paid != 0  
   `;
-  const tableName = chainTableNames[chain];
+  const tableName = getChainTableName(chain);
   const query = format(queryStr, tableName, blocks, tableName);
   const [avgTxCost] = (await db.query(query)).rows;
   if (!avgTxCost?.avg_tx_cost_usd) throw new Error('DB records not found');

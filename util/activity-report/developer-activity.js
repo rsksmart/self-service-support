@@ -1,6 +1,6 @@
 const format = require('pg-format');
 const db = require('../../dbPool.js');
-const { getChainTableName } = require('./util.js');
+const { getChainTableName } = require('../verify-chain.js');
 const getMovingAverage = require('./moving-average.js');
 /* 
 generates time periods to query past activities:

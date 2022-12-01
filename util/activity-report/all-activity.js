@@ -1,6 +1,6 @@
 const format = require('pg-format');
 const db = require('../../dbPool.js');
-const { getChainTableName } = require('./util.js');
+const { getChainTableName } = require('../verify-chain.js');
 
 async function dbQueryAllActivity(days, chainTableName) {
   const queryStr = `
