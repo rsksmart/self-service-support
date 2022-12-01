@@ -45,7 +45,6 @@ function getCacheKey(req) {
 }
 
 function verifyParams(req) {
-  // verify each parameter and return object containing all param names and their values
   getQsParams(req).forEach(({ name, verify }) => {
     verify(req.query[name]);
   });
