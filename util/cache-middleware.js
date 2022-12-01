@@ -1,5 +1,5 @@
 const flatCache = require('flat-cache');
-const endpointParams = require('./endpoint-params.js');
+const apiConfig = require('./api-config.js');
 
 const cache = flatCache.load('rootstock-self-service-support');
 
@@ -8,7 +8,7 @@ function getCacheKey(req) {
 }
 
 function getParamValues(req) {
-  const { queryStringParams } = endpointParams[getCacheKey(req)];
+  const { queryStringParams } = apiConfig[getCacheKey(req)];
   return queryStringParams.reduce(
     (prev, { name }) => ({
       ...prev,
@@ -19,7 +19,7 @@ function getParamValues(req) {
 }
 
 function verifyParams(req) {
-  const { queryStringParams } = endpointParams[getCacheKey(req)];
+  const { queryStringParams } = apiConfig[getCacheKey(req)];
   // verify each parameter and return object containing all param names and their values
   queryStringParams.forEach(({ name, verify }) => {
     verify(req.query[name]);
@@ -34,7 +34,7 @@ async function updateCache(req) {
   try {
     const { chain } = req.query;
     const cacheKey = getCacheKey(req);
-    const { cacheTtl, queryDb } = endpointParams[cacheKey];
+    const { cacheTtl, queryDb } = apiConfig[cacheKey];
     const ttl = new Date(); // cache time to live
     ttl.setSeconds(ttl.getSeconds() - cacheTtl);
     const cacheData = cache.getKey(getCacheKey(req));
@@ -59,7 +59,7 @@ async function updateCache(req) {
 // universal cache handling middleware
 // returns cached data immediately after receiving a request
 // and then then tries to update cache from the DB
-async function sendCachedResponse(req, res) {
+async function cacheMiddleware(req, res) {
   try {
     verifyParams(req);
     res.status(200).json({
@@ -75,5 +75,5 @@ async function sendCachedResponse(req, res) {
 }
 
 module.exports = {
-  sendCachedResponse,
+  cacheMiddleware,
 };
