@@ -11,10 +11,12 @@ module.exports = {
     queryStringParams: [
       {
         name: 'chain',
+        defaultValue: 'rsk_mainnet',
         verify: verifyChain,
       },
       {
         name: 'blocks',
+        defaultValue: '100',
         verify: avgTxCost.verifyBlocks,
       },
     ],
@@ -30,10 +32,12 @@ module.exports = {
     queryStringParams: [
       {
         name: 'days',
+        defaultValue: '20',
         verify: allActivity.verifyDays,
       },
       {
         name: 'chain',
+        defaultValue: 'rsk_mainnet',
         verify: verifyChain,
       },
     ],
