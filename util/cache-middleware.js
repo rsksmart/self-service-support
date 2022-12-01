@@ -1,6 +1,7 @@
 const flatCache = require('flat-cache');
 const apiConfig = require('./api-config.js');
 const url = require('url');
+const qs = require('querystring');
 
 const cache = flatCache.load('rootstock-self-service-support');
 
@@ -8,9 +9,24 @@ function getPath(req) {
   return url.parse(req.originalUrl).pathname;
 }
 
+function getApiConfig(req) {
+  const path = getPath(req);
+  const config = apiConfig[path];
+  if (!config) throw new Error(`Missing config for the path '${path}'`);
+  return config;
+}
+
+function getQsParams(req) {
+  const { queryStringParams } = getApiConfig(req);
+  if (!queryStringParams || !Array.isArray(queryStringParams))
+    throw new Error(
+      `Query string parameters for '${getPath(req)}' are not defined.`,
+    );
+  return queryStringParams;
+}
+
 function getParamValues(req) {
-  const { queryStringParams } = apiConfig[getPath(req)];
-  return queryStringParams.reduce(
+  return getQsParams(req).reduce(
     (prev, { name }) => ({
       ...prev,
       [name]: req.query[name],
@@ -19,40 +35,40 @@ function getParamValues(req) {
   );
 }
 
+function getCacheKey(req) {
+  // recompose query string
+  // this is necessary to prevent cache-busting DOS attacks by adding on
+  // additional (unused) query params
+  const path = getPath(req);
+  const params = qs.stringify(getParamValues(req));
+  return `${path}?${params}`;
+}
+
 function verifyParams(req) {
-  const { queryStringParams } = apiConfig[getPath(req)];
   // verify each parameter and return object containing all param names and their values
-  queryStringParams.forEach(({ name, verify }) => {
+  getQsParams(req).forEach(({ name, verify }) => {
     verify(req.query[name]);
   });
 }
 
 function readCache(req) {
-  return cache.getKey(getPath(req))?.[req.query.chain];
+  const { defaultValues } = getApiConfig(req);
+  return cache.getKey(getCacheKey(req)) ?? defaultValues;
 }
 
 async function updateCache(req) {
   try {
-    const { chain } = req.query;
-    const cacheKey = getPath(req);
-    const { cacheTtl, queryDb } = apiConfig[cacheKey];
+    const cacheData = readCache(req);
+    const { cacheTtl, queryDb } = getApiConfig(req);
     const ttl = new Date(); // cache time to live
     ttl.setSeconds(ttl.getSeconds() - cacheTtl);
-    const cacheData = cache.getKey(getPath(req));
-    // don't do DB query if cached data is newer than TTL
-    if (ttl < new Date(cacheData?.[chain]?.time ?? 0)) return;
+    if (ttl < new Date(cacheData?.time ?? 0)) return;
     const params = getParamValues(req);
     const dbData = await queryDb(params);
-    // each time we are able to successfully get the query result
-    // store these values + the timestamp in memory
-    cache.setKey(cacheKey, {
-      ...cacheData,
-      [chain]: {
-        time: new Date(),
-        ...dbData,
-      },
+    cache.setKey(getCacheKey(req), {
+      time: new Date(),
+      ...dbData,
     });
-    console.log('saved cache');
     console.log(cache.all());
   } catch (error) {
     // don't write data to the cache

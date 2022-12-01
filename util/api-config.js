@@ -15,5 +15,10 @@ module.exports = {
         verify: avgTxCost.verifyBlocks,
       },
     ],
+    defaultValues: {
+      time: new Date(0),
+      vg_tx_cost_rbtc: 0.00000832480954068274,
+      avg_tx_cost_usd: 0.14281035946040882,
+    },
   },
 };
