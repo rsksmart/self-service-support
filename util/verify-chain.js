@@ -3,13 +3,18 @@ const chainTableNames = {
   rsk_mainnet: 'chain_rsk_mainnet',
 };
 
-function getChainTableName(chain) {
+function verifyChain(chain) {
   if (!chain || !chainTableNames[chain]) {
     throw new Error(`chain '${chain}' is not supported`);
   }
+}
+
+function getChainTableName(chain) {
+  verifyChain(chain);
   return chainTableNames[chain];
 }
 
 module.exports = {
+  verifyChain,
   getChainTableName,
 };
