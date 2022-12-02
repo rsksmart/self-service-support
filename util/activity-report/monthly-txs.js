@@ -1,25 +1,22 @@
-// Template for creating a new API handler
-
-// 0. Imports
 const format = require('pg-format');
 const db = require('../../dbPool.js');
-const { getChainTableName } = require('../verify-chain.js');
+const { getChainTableName, verifyChain } = require('../verify-chain.js');
 
-// 1. QS params validation functions
-function verify(/* req, defaultValue */) {}
-
-// 2. DB query function
 async function queryDb(chain) {
   const queryStr = `
-
+    SELECT COUNT(*) AS monthly_txs
+    FROM %I.block_transactions t
+    WHERE t.signed_at 
+    BETWEEN DATE_TRUNC('month', NOW()) - INTERVAL '1 month' 
+    AND DATE_TRUNC('month', NOW())
+    AND t.fees_paid != 0
   `;
   const query = format(queryStr, getChainTableName(chain));
   const [queryResult] = (await db.query(query)).rows;
-  if (!queryResult?.accounts) throw new Error('DB records not found');
+  if (!queryResult?.monthly_txs) throw new Error('DB records not found');
   return queryResult;
 }
 
-// 3. `fetch` function returning API data props object
 async function fetch({ chain }) {
   const dbResult = await queryDb(chain);
   return {
@@ -29,8 +26,16 @@ async function fetch({ chain }) {
   };
 }
 
-// 4. Exports
 module.exports = {
-  verify,
-  fetch,
+  '/api/v1/rsk-activity-report/monthly-txs': {
+    cacheTtl: 3600, // 1 hour
+    fetch,
+    queryStringParams: [
+      {
+        name: 'chain',
+        defaultValue: 'rsk_mainnet',
+        verify: verifyChain,
+      },
+    ],
+  },
 };
