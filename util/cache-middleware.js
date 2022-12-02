@@ -1,7 +1,7 @@
 const flatCache = require('flat-cache');
-const apiConfig = require('./api-config.js');
 const url = require('url');
 const qs = require('querystring');
+const apiConfig = require('./api-config.js');
 
 const cache = flatCache.load('rootstock-self-service-support');
 
