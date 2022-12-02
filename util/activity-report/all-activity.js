@@ -1,6 +1,6 @@
 const format = require('pg-format');
 const db = require('../../dbPool.js');
-const { getChainTableName } = require('../verify-chain.js');
+const { getChainTableName, verifyChain } = require('../verify-chain.js');
 
 function verifyDays(req, defaultValue) {
   const days = req.query.days ?? defaultValue;
@@ -33,6 +33,20 @@ async function fetch({ days, chain }) {
 }
 
 module.exports = {
-  fetch,
-  verifyDays,
+  '/api/v1/rsk-activity-report/all-activity': {
+    cacheTtl: 600,
+    fetch,
+    queryStringParams: [
+      {
+        name: 'days',
+        defaultValue: '20',
+        verify: verifyDays,
+      },
+      {
+        name: 'chain',
+        defaultValue: 'rsk_mainnet',
+        verify: verifyChain,
+      },
+    ],
+  },
 };

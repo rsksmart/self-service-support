@@ -1,6 +1,6 @@
 const format = require('pg-format');
 const db = require('../../dbPool.js');
-const { getChainTableName } = require('../verify-chain.js');
+const { getChainTableName, verifyChain } = require('../verify-chain.js');
 const getMovingAverage = require('./moving-average.js');
 
 function verifyStartDate(req) {
@@ -115,8 +115,28 @@ async function fetch({
 }
 
 module.exports = {
-  fetch,
-  verifyWindows,
-  verifyStartDate,
-  verifyEndDate,
+  '/api/v1/rsk-activity-report/developer-activity': {
+    cacheTtl: 600,
+    fetch,
+    queryStringParams: [
+      {
+        name: 'start-date',
+        verify: verifyStartDate,
+      },
+      {
+        name: 'end-date',
+        verify: verifyEndDate,
+      },
+      {
+        name: 'chain',
+        defaultValue: 'rsk_testnet',
+        verify: verifyChain,
+      },
+      {
+        name: 'windows',
+        defaultValue: 4,
+        verify: verifyWindows,
+      },
+    ],
+  },
 };
