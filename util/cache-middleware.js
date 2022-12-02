@@ -45,25 +45,28 @@ function getCacheKey(req) {
 }
 
 function verifyParams(req) {
-  getQsParams(req).forEach(({ name, verify, defaultValue }) => {
-    verify(req.query[name] ?? defaultValue);
-  });
+  getQsParams(req).forEach(({ verify, defaultValue }) =>
+    verify(req, defaultValue),
+  );
 }
 
-function readCache(req) {
-  const { defaultValues } = getApiConfig(req);
-  return cache.getKey(getCacheKey(req)) ?? defaultValues;
+// gets another cached value for the same API endpoint
+// or returns default values stored in api-config file
+function getDefaultValue(req) {
+  const path = getPath(req);
+  const key = Object.keys(cache.all()).find((key) => key.startsWith(path));
+  return cache.getKey(key);
 }
 
 async function updateCache(req) {
   try {
-    const cacheData = readCache(req);
-    const { cacheTtl, queryDb } = getApiConfig(req);
+    const cacheData = cache.getKey(getCacheKey(req));
+    const { cacheTtl, fetch } = getApiConfig(req);
     const ttl = new Date(); // cache time to live
     ttl.setSeconds(ttl.getSeconds() - cacheTtl);
     if (ttl < new Date(cacheData?.time ?? 0)) return;
     const params = getParamValues(req);
-    const dbData = await queryDb(params);
+    const dbData = await fetch(params);
     cache.setKey(getCacheKey(req), {
       time: new Date(),
       ...dbData,
@@ -81,15 +84,14 @@ async function cacheMiddleware(req, res) {
   try {
     verifyParams(req);
     res.status(200).json({
-      ...getParamValues(req),
-      ...readCache(req),
+      ...(cache.getKey(getCacheKey(req)) ?? getDefaultValue(req)),
     });
+    await updateCache(req);
   } catch (error) {
     res.status(400).json({
       error: error.message,
     });
   }
-  await updateCache(req);
 }
 
 module.exports = {

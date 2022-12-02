@@ -1,13 +1,12 @@
 const { verifyChain } = require('./verify-chain.js');
 const avgTxCost = require('./activity-report/avg-tx-cost.js');
 const allActivity = require('./activity-report/all-activity.js');
-
-const defaultTime = new Date(0);
+const devActivity = require('./activity-report/developer-activity.js');
 
 module.exports = {
   '/api/v1/rsk-activity-report/avg-tx-cost': {
     cacheTtl: 600, // seconds
-    queryDb: avgTxCost.queryDb,
+    fetch: avgTxCost.fetch,
     queryStringParams: [
       {
         name: 'chain',
@@ -20,15 +19,10 @@ module.exports = {
         verify: avgTxCost.verifyBlocks,
       },
     ],
-    defaultValues: {
-      time: defaultTime,
-      vg_tx_cost_rbtc: 0.00000832480954068274,
-      avg_tx_cost_usd: 0.14281035946040882,
-    },
   },
   '/api/v1/rsk-activity-report/all-activity': {
     cacheTtl: 600,
-    queryDb: allActivity.queryDb,
+    fetch: allActivity.fetch,
     queryStringParams: [
       {
         name: 'days',
@@ -41,9 +35,29 @@ module.exports = {
         verify: verifyChain,
       },
     ],
-    defaultValues: {
-      time: defaultTime,
-      accounts: 1628,
-    },
+  },
+  '/api/v1/rsk-activity-report/developer-activity': {
+    cacheTtl: 600,
+    fetch: devActivity.fetch,
+    queryStringParams: [
+      {
+        name: 'start-date',
+        verify: devActivity.verifyStartDate,
+      },
+      {
+        name: 'end-date',
+        verify: devActivity.verifyEndDate,
+      },
+      {
+        name: 'chain',
+        defaultValue: 'rsk_testnet',
+        verify: verifyChain,
+      },
+      {
+        name: 'windows',
+        defaultValue: 4,
+        verify: devActivity.verifyWindows,
+      },
+    ],
   },
 };

@@ -2,7 +2,8 @@ const format = require('pg-format');
 const db = require('../../dbPool.js');
 const { getChainTableName } = require('../verify-chain.js');
 
-function verifyBlocks(blocks) {
+function verifyBlocks(req, defaultValue) {
+  const blocks = req.query.blocks ?? defaultValue;
   const blocksRange = {
     lower: 1,
     upper: 1000,
@@ -13,7 +14,7 @@ function verifyBlocks(blocks) {
     );
 }
 
-async function queryDb({ blocks, chain }) {
+async function queryDb(blocks, chain) {
   /* 
     PosgreSQL query:
     1. get the last %s blocks
@@ -49,7 +50,17 @@ async function queryDb({ blocks, chain }) {
   return avgTxCost;
 }
 
+async function fetch({ blocks, chain }) {
+  const dbResult = await queryDb(blocks, chain);
+  return {
+    blocks,
+    chain,
+    time: new Date(),
+    ...dbResult,
+  };
+}
+
 module.exports = {
-  queryDb,
+  fetch,
   verifyBlocks,
 };

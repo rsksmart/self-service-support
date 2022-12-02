@@ -2,6 +2,32 @@ const format = require('pg-format');
 const db = require('../../dbPool.js');
 const { getChainTableName } = require('../verify-chain.js');
 const getMovingAverage = require('./moving-average.js');
+
+function verifyStartDate(req) {
+  const startDate = new Date(req.query['start-date']);
+  if (!(startDate instanceof Date && !isNaN(startDate)))
+    throw new Error(`Start date is missing or has unsupported format`);
+}
+
+function verifyEndDate(req) {
+  const endDate = new Date(req.query['end-date']);
+  if (!(endDate instanceof Date && !isNaN(endDate)))
+    throw new Error(`End date is missing or has unsupported format`);
+}
+
+function verifyWindows(req, defaultValue) {
+  // at this moment start and end datea are already verified
+  const startDate = new Date(req.query['start-date']);
+  const endDate = new Date(req.query['end-date']);
+  if (startDate >= endDate)
+    throw new Error('start day should be earlier than end date');
+  const windows = req.query.windows ?? defaultValue;
+  if (isNaN(windows) || windows < 1 || windows > 20)
+    throw new Error(
+      `'${windows}' is illegal moving average 'windows' parameter`,
+    );
+}
+
 /* 
 generates time periods to query past activities:
 [
@@ -12,16 +38,6 @@ generates time periods to query past activities:
 function getWindows(apiStartDate, apiEndDate, windowsAmount) {
   const startDate = new Date(apiStartDate);
   const endDate = new Date(apiEndDate);
-
-  if (
-    [startDate, endDate].some((date) => !(date instanceof Date && !isNaN(date)))
-  )
-    throw new Error(`date has unsupported format`);
-  if (startDate >= endDate)
-    throw new Error('start day should be earlier than end date');
-  if (isNaN(windowsAmount) || windowsAmount < 1 || windowsAmount > 20)
-    throw new Error(`Illegal moving average 'windows' parameter`);
-
   const windowLength = endDate - startDate;
   const windows = [];
   for (let i = 0; i < windowsAmount; i += 1) {
@@ -29,13 +45,10 @@ function getWindows(apiStartDate, apiEndDate, windowsAmount) {
     const dateFrom = new Date(dateTo - windowLength);
     windows.push([dateFrom, dateTo]);
   }
-  return {
-    windows,
-    windowLength,
-  };
+  return windows;
 }
 
-async function dbQueryDeveloperActivity(intervals, chainTableName) {
+async function dbQueryDeveloperActivity(intervals, chain) {
   const queryStr = `
   (SELECT
     %s as week,
@@ -54,30 +67,26 @@ async function dbQueryDeveloperActivity(intervals, chainTableName) {
   // parameters for query string interpolation
   const formatParams = intervals.flatMap(([dateFrom, dateTo], i) => [
     i + 1,
-    chainTableName,
+    getChainTableName(chain),
     dateFrom,
     dateTo,
   ]);
   const query = format(union, ...formatParams);
-  return db.query(query);
-}
-
-async function queryDeveloperActivity(
-  startDate,
-  endDate,
-  chain = 'rsk_testnet',
-  windowsAmount = 4,
-) {
-  const { windows, windowLength } = getWindows(
-    startDate,
-    endDate,
-    windowsAmount,
-  );
-  const chainTableName = getChainTableName(chain);
-  const queryResult = await dbQueryDeveloperActivity(windows, chainTableName);
-
+  const queryResult = db.query(query);
   if (queryResult.rowCount === 0)
     throw new Error('No transactions matching your request');
+  return queryResult;
+}
+
+async function fetch({
+  'start-date': startDate,
+  'end-date': endDate,
+  windows: windowsAmount,
+  chain,
+}) {
+  const windows = getWindows(startDate, endDate, windowsAmount);
+
+  const queryResult = await dbQueryDeveloperActivity(windows, chain);
 
   const deployments = queryResult.rows.map(({ deployment_tx_count }) =>
     Number(deployment_tx_count),
@@ -87,26 +96,27 @@ async function queryDeveloperActivity(
   );
 
   return {
+    start_date: startDate,
+    end_date: endDate,
+    windows: windowsAmount,
     chain,
-    start_date: windows[0][0],
-    end_date: windows[0][1],
-    window_length_days: windowLength / 8.64e7, // ms per day
-    windows_amount: Number(windowsAmount),
+    time: new Date(),
     deployment_tx_count: {
       current: deployments[deployments.length - 1],
       sma: getMovingAverage('simple', deployments),
-      ema: getMovingAverage('exponential', deployments),
       wma: getMovingAverage('weighted', deployments),
     },
     deployment_account_count: {
       current: accounts[accounts.length - 1],
       sma: getMovingAverage('simple', accounts),
-      ema: getMovingAverage('exponential', accounts),
       wma: getMovingAverage('weighted', accounts),
     },
   };
 }
 
 module.exports = {
-  queryDeveloperActivity,
+  fetch,
+  verifyWindows,
+  verifyStartDate,
+  verifyEndDate,
 };
