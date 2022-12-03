@@ -27,7 +27,6 @@ async function fetch({ days, chain }) {
   return {
     days,
     chain,
-    time: new Date(),
     ...dbResult,
   };
 }

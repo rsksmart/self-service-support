@@ -100,7 +100,6 @@ async function fetch({
     end_date: endDate,
     windows: windowsAmount,
     chain,
-    time: new Date(),
     deployment_tx_count: {
       current: deployments[deployments.length - 1],
       sma: getMovingAverage('simple', deployments),

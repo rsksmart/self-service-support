@@ -55,7 +55,6 @@ async function fetch({ blocks, chain }) {
   return {
     blocks,
     chain,
-    time: new Date(),
     ...dbResult,
   };
 }
