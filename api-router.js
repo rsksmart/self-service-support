@@ -3,8 +3,7 @@ const express = require('express');
 const calcTxInfo = require('./util/calc-tx-info.js');
 const rskTokenBridgeController = require('./rsk-token-bridge-controller.js');
 const getAddressReport = require('./util/address-report.js');
-const rskActivityReport = require('./util/activity-report/index.js');
-const { cacheMiddleware } = require('./util/cache-middleware.js');
+const { cacheMiddleware } = require('./util/cache-middleware');
 
 const router = express.Router();
 

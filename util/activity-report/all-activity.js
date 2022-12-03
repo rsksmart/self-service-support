@@ -1,8 +1,8 @@
 const format = require('pg-format');
 const db = require('../../dbPool.js');
-const { getChainTableName, verifyChain } = require('../verify-chain.js');
+const { getChainTableName, validateChain } = require('./validate-chain.js');
 
-function verifyDays(req, defaultValue) {
+function validateDays(req, defaultValue) {
   const days = req.query.days ?? defaultValue;
   if (isNaN(days) || days <= 0) {
     throw new Error(`Number of days '${days}' has unsupported format`);
@@ -39,12 +39,12 @@ module.exports = {
     {
       name: 'days',
       defaultValue: '20',
-      verify: verifyDays,
+      validate: validateDays,
     },
     {
       name: 'chain',
       defaultValue: 'rsk_mainnet',
-      verify: verifyChain,
+      validate: validateChain,
     },
   ],
 };

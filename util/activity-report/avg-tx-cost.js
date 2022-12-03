@@ -1,8 +1,8 @@
 const format = require('pg-format');
 const db = require('../../dbPool.js');
-const { getChainTableName, verifyChain } = require('../verify-chain.js');
+const { getChainTableName, validateChain } = require('./validate-chain.js');
 
-function verifyBlocks(req, defaultValue) {
+function validateBlocks(req, defaultValue) {
   const blocks = req.query.blocks ?? defaultValue;
   const blocksRange = {
     lower: 1,
@@ -67,12 +67,12 @@ module.exports = {
     {
       name: 'chain',
       defaultValue: 'rsk_mainnet',
-      verify: verifyChain,
+      validate: validateChain,
     },
     {
       name: 'blocks',
       defaultValue: '100',
-      verify: verifyBlocks,
+      validate: validateBlocks,
     },
   ],
 };

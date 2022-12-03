@@ -1,21 +1,21 @@
 const format = require('pg-format');
 const db = require('../../dbPool.js');
-const { getChainTableName, verifyChain } = require('../verify-chain.js');
+const { getChainTableName, validateChain } = require('./validate-chain.js');
 const getMovingAverage = require('./moving-average.js');
 
-function verifyStartDate(req) {
+function validateStartDate(req) {
   const startDate = new Date(req.query['start-date']);
   if (!(startDate instanceof Date && !isNaN(startDate)))
     throw new Error(`Start date is missing or has unsupported format`);
 }
 
-function verifyEndDate(req) {
+function validateEndDate(req) {
   const endDate = new Date(req.query['end-date']);
   if (!(endDate instanceof Date && !isNaN(endDate)))
     throw new Error(`End date is missing or has unsupported format`);
 }
 
-function verifyWindows(req, defaultValue) {
+function validateWindows(req, defaultValue) {
   // at this moment start and end datea are already verified
   const startDate = new Date(req.query['start-date']);
   const endDate = new Date(req.query['end-date']);
@@ -48,7 +48,7 @@ function getWindows(apiStartDate, apiEndDate, windowsAmount) {
   return windows;
 }
 
-async function dbQueryDeveloperActivity(intervals, chain) {
+async function queryDb(intervals, chain) {
   const queryStr = `
   (SELECT
     %s as week,
@@ -86,7 +86,7 @@ async function fetch({
 }) {
   const windows = getWindows(startDate, endDate, windowsAmount);
 
-  const queryResult = await dbQueryDeveloperActivity(windows, chain);
+  const queryResult = await queryDb(windows, chain);
 
   const deployments = queryResult.rows.map(({ deployment_tx_count }) =>
     Number(deployment_tx_count),
@@ -120,21 +120,21 @@ module.exports = {
   queryStringParams: [
     {
       name: 'start-date',
-      verify: verifyStartDate,
+      validate: validateStartDate,
     },
     {
       name: 'end-date',
-      verify: verifyEndDate,
+      validate: validateEndDate,
     },
     {
       name: 'chain',
       defaultValue: 'rsk_testnet',
-      verify: verifyChain,
+      validate: validateChain,
     },
     {
       name: 'windows',
       defaultValue: 4,
-      verify: verifyWindows,
+      validate: validateWindows,
     },
   ],
 };
