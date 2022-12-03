@@ -1,8 +1,8 @@
 const format = require('pg-format');
 const db = require('../../dbPool.js');
-const { getChainTableName, verifyChain } = require('../verify-chain.js');
+const { getChainTableName, validateChain } = require('./validate-chain.js');
 
-function verifyBlocks(req, defaultValue) {
+function validateBlocks(req, defaultValue) {
   const blocks = req.query.blocks ?? defaultValue;
   const blocksRange = {
     lower: 1,
@@ -55,26 +55,24 @@ async function fetch({ blocks, chain }) {
   return {
     blocks,
     chain,
-    time: new Date(),
     ...dbResult,
   };
 }
 
 module.exports = {
-  '/api/v1/rsk-activity-report/avg-tx-cost': {
-    cacheTtl: 600, // seconds
-    fetch,
-    queryStringParams: [
-      {
-        name: 'chain',
-        defaultValue: 'rsk_mainnet',
-        verify: verifyChain,
-      },
-      {
-        name: 'blocks',
-        defaultValue: '100',
-        verify: verifyBlocks,
-      },
-    ],
-  },
+  path: '/api/v1/rsk-activity-report/avg-tx-cost',
+  cacheTtl: 600, // seconds
+  fetch,
+  queryStringParams: [
+    {
+      name: 'chain',
+      defaultValue: 'rsk_mainnet',
+      validate: validateChain,
+    },
+    {
+      name: 'blocks',
+      defaultValue: '100',
+      validate: validateBlocks,
+    },
+  ],
 };

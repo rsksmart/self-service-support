@@ -1,8 +1,8 @@
 const format = require('pg-format');
 const db = require('../../dbPool.js');
-const { getChainTableName, verifyChain } = require('../verify-chain.js');
+const { getChainTableName, validateChain } = require('./validate-chain.js');
 
-function verifyDays(req, defaultValue) {
+function validateDays(req, defaultValue) {
   const days = req.query.days ?? defaultValue;
   if (isNaN(days) || days <= 0) {
     throw new Error(`Number of days '${days}' has unsupported format`);
@@ -27,26 +27,24 @@ async function fetch({ days, chain }) {
   return {
     days,
     chain,
-    time: new Date(),
     ...dbResult,
   };
 }
 
 module.exports = {
-  '/api/v1/rsk-activity-report/all-activity': {
-    cacheTtl: 600,
-    fetch,
-    queryStringParams: [
-      {
-        name: 'days',
-        defaultValue: '20',
-        verify: verifyDays,
-      },
-      {
-        name: 'chain',
-        defaultValue: 'rsk_mainnet',
-        verify: verifyChain,
-      },
-    ],
-  },
+  path: '/api/v1/rsk-activity-report/all-activity',
+  cacheTtl: 600,
+  fetch,
+  queryStringParams: [
+    {
+      name: 'days',
+      defaultValue: '20',
+      validate: validateDays,
+    },
+    {
+      name: 'chain',
+      defaultValue: 'rsk_mainnet',
+      validate: validateChain,
+    },
+  ],
 };
