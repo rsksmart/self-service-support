@@ -61,20 +61,19 @@ async function fetch({ blocks, chain }) {
 }
 
 module.exports = {
-  '/api/v1/rsk-activity-report/avg-tx-cost': {
-    cacheTtl: 600, // seconds
-    fetch,
-    queryStringParams: [
-      {
-        name: 'chain',
-        defaultValue: 'rsk_mainnet',
-        verify: verifyChain,
-      },
-      {
-        name: 'blocks',
-        defaultValue: '100',
-        verify: verifyBlocks,
-      },
-    ],
-  },
+  path: '/api/v1/rsk-activity-report/avg-tx-cost',
+  cacheTtl: 600, // seconds
+  fetch,
+  queryStringParams: [
+    {
+      name: 'chain',
+      defaultValue: 'rsk_mainnet',
+      verify: verifyChain,
+    },
+    {
+      name: 'blocks',
+      defaultValue: '100',
+      verify: verifyBlocks,
+    },
+  ],
 };

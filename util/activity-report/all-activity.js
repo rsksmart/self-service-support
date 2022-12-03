@@ -33,20 +33,19 @@ async function fetch({ days, chain }) {
 }
 
 module.exports = {
-  '/api/v1/rsk-activity-report/all-activity': {
-    cacheTtl: 600,
-    fetch,
-    queryStringParams: [
-      {
-        name: 'days',
-        defaultValue: '20',
-        verify: verifyDays,
-      },
-      {
-        name: 'chain',
-        defaultValue: 'rsk_mainnet',
-        verify: verifyChain,
-      },
-    ],
-  },
+  path: '/api/v1/rsk-activity-report/all-activity',
+  cacheTtl: 600,
+  fetch,
+  queryStringParams: [
+    {
+      name: 'days',
+      defaultValue: '20',
+      verify: verifyDays,
+    },
+    {
+      name: 'chain',
+      defaultValue: 'rsk_mainnet',
+      verify: verifyChain,
+    },
+  ],
 };

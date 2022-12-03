@@ -11,7 +11,7 @@ function getPath(req) {
 
 function getApiConfig(req) {
   const path = getPath(req);
-  const config = apiConfig[path];
+  const config = apiConfig.find((conf) => conf.path === path);
   if (!config) throw new Error(`Missing config for the path '${path}'`);
   return config;
 }

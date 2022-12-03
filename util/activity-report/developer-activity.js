@@ -115,28 +115,27 @@ async function fetch({
 }
 
 module.exports = {
-  '/api/v1/rsk-activity-report/developer-activity': {
-    cacheTtl: 600,
-    fetch,
-    queryStringParams: [
-      {
-        name: 'start-date',
-        verify: verifyStartDate,
-      },
-      {
-        name: 'end-date',
-        verify: verifyEndDate,
-      },
-      {
-        name: 'chain',
-        defaultValue: 'rsk_testnet',
-        verify: verifyChain,
-      },
-      {
-        name: 'windows',
-        defaultValue: 4,
-        verify: verifyWindows,
-      },
-    ],
-  },
+  path: '/api/v1/rsk-activity-report/developer-activity',
+  cacheTtl: 600,
+  fetch,
+  queryStringParams: [
+    {
+      name: 'start-date',
+      verify: verifyStartDate,
+    },
+    {
+      name: 'end-date',
+      verify: verifyEndDate,
+    },
+    {
+      name: 'chain',
+      defaultValue: 'rsk_testnet',
+      verify: verifyChain,
+    },
+    {
+      name: 'windows',
+      defaultValue: 4,
+      verify: verifyWindows,
+    },
+  ],
 };
