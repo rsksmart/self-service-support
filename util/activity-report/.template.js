@@ -30,27 +30,25 @@ async function fetch({ chain, param }) {
   return {
     chain,
     param,
-    time: new Date(),
     ...dbResult,
   };
 }
 
 // 4. Export API description
 module.exports = {
-  '/api/v1/rsk-activity-report/endpoint-name': {
-    cacheTtl: 600,
-    fetch,
-    queryStringParams: [
-      {
-        name: 'param',
-        defaultValue: '0',
-        verify: verifyParam,
-      },
-      {
-        name: 'chain',
-        defaultValue: 'rsk_mainnet',
-        verify: verifyChain,
-      },
-    ],
-  },
+  path: '/api/v1/rsk-activity-report/endpoint-name',
+  cacheTtl: 600,
+  fetch,
+  queryStringParams: [
+    {
+      name: 'param',
+      defaultValue: '0',
+      verify: verifyParam,
+    },
+    {
+      name: 'chain',
+      defaultValue: 'rsk_mainnet',
+      verify: verifyChain,
+    },
+  ],
 };
