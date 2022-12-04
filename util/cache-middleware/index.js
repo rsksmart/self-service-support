@@ -12,6 +12,7 @@ async function cacheMiddleware(req, res) {
     });
     await cache.update(req);
   } catch (error) {
+    if (res.headersSent) return;
     res.status(400).json({
       error: error.message,
     });
