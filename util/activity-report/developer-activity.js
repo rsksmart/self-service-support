@@ -115,7 +115,7 @@ async function fetch({
 
 module.exports = {
   path: '/api/v1/rsk-activity-report/developer-activity',
-  cacheTtl: 600,
+  cacheTtl: 10,
   fetch,
   queryStringParams: [
     {
