@@ -3,10 +3,10 @@
 // 0. Imports
 const format = require('pg-format');
 const db = require('../../dbPool.js');
-const { getChainTableName, verifyChain } = require('../verify-chain.js');
+const { validateChain, getChainTableName } = require('./validate-chain.js');
 
 // 1. QS params validation functions
-function verifyParam(req, defaultValue) {
+function validateParam(req, defaultValue) {
   const param = req.query.days ?? defaultValue;
   if (!param) {
     throw new Error(`QR parameter '${param}' has unsupported format`);
@@ -43,12 +43,12 @@ module.exports = {
     {
       name: 'param',
       defaultValue: '0',
-      verify: verifyParam,
+      validate: validateParam,
     },
     {
       name: 'chain',
       defaultValue: 'rsk_mainnet',
-      verify: verifyChain,
+      validate: validateChain,
     },
   ],
 };
