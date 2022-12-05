@@ -8,8 +8,8 @@
     "start": "node run.js",
     "dev": "PERMISSIVE_CORS=1 node-dev run.js",
     "prod": "NODE_ENV=production pm2 start run.js",
-    "test-unit": "node all.unit.test.js",
-    "test-e2e": "node all.e2e.test.js",
+    "test-unit": "node test/all.unit.test.js",
+    "test-e2e": "node test/all.e2e.test.js",
     "test": "npm run test-unit"
   },
   "engines": {
