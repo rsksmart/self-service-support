@@ -3,18 +3,18 @@ const chainTableNames = {
   rsk_mainnet: 'chain_rsk_mainnet',
 };
 
-function verifyChain(chain) {
+function validateChain(req, defaultValue) {
+  const chain = req.query.chian ?? defaultValue;
   if (!chain || !chainTableNames[chain]) {
     throw new Error(`chain '${chain}' is not supported`);
   }
 }
 
 function getChainTableName(chain) {
-  verifyChain(chain);
   return chainTableNames[chain];
 }
 
 module.exports = {
-  verifyChain,
+  validateChain,
   getChainTableName,
 };
