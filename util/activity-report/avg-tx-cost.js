@@ -17,29 +17,30 @@ function validateBlocks(req, defaultValue) {
 async function queryDb(blocks, chain) {
   /* 
     PosgreSQL query:
-    1. get the last %s blocks
-    2. populate blocks with current RBTC/USD rates
+    1. get the last available RBTC / USD rate
+    2. get the last %s blocks
     3. get average gas fees in both RBTC and USD
   */
   const queryStr = `
-    WITH last_blocks AS (
-      SELECT b.id, b.signed_at
+    WITH rbtc_rate AS (
+      SELECT tp.price_in_usd  
+	    FROM reports.token_prices tp
+		  WHERE tp.chain_id = 30 
+	    AND tp.coingecko_token_id = 'rootstock'
+	    ORDER BY tp.dt desc
+	    LIMIT 1
+    ), last_blocks AS (
+      SELECT b.id, r.price_in_usd
       FROM %I.blocks b
+      CROSS JOIN rbtc_rate r
       ORDER BY b.height DESC
       LIMIT %s
-    ), last_blocks_with_usd_rates AS (
-      SELECT lb.id, tp.price_in_usd 
-      FROM reports.token_prices tp
-      INNER JOIN last_blocks lb
-      ON DATE_TRUNC('day', tp.dt) = DATE_TRUNC('day', lb.signed_at)
-      WHERE tp.chain_id = 30 
-      AND tp.coingecko_token_id = 'rootstock'
     )
     SELECT 
     AVG(t.fees_paid / 10^18) AS avg_tx_cost_rbtc,
     AVG(t.fees_paid / 10^18 * lb.price_in_usd) AS avg_tx_cost_usd
     FROM %I.block_transactions t
-    INNER JOIN last_blocks_with_usd_rates lb
+    INNER JOIN last_blocks lb
     ON t.block_id = lb.id
     WHERE t.fees_paid != 0  
   `;
