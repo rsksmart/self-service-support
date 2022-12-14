@@ -27,6 +27,12 @@ server.use(cors(corsOptions));
 if (process.env.NODE_ENV != 'production') {
   server.use(morgan('dev'));
 }
+
+// redirect all requests for https://self-service.rsk.co/
+server.all('/', (req, res) => {
+  res.status(302).redirect('https://developers.rsk.co/');
+});
+
 server.get('/api/status', (req, res) => {
   res.send({
     ok: Date.now(),
