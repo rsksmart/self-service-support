@@ -3,6 +3,7 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
+const morgan = require('morgan');
 
 const apiRouter = require('./api-router.js');
 const qrcodeRouter = require('./qrcode-router.js');
@@ -25,6 +26,9 @@ if (permissiveCors) {
 
 server.use(cors(corsOptions));
 
+if (process.env.NODE_ENV != 'production') {
+  server.use(morgan('dev'));
+}
 server.get('/api/status', (req, res) => {
   res.send({
     ok: Date.now(),

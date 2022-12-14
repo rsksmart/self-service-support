@@ -3,14 +3,9 @@ const express = require('express');
 const calcTxInfo = require('./util/calc-tx-info.js');
 const rskTokenBridgeController = require('./rsk-token-bridge-controller.js');
 const getAddressReport = require('./util/address-report.js');
-const rskActivityReport = require('./util/activity-report.js');
+const { cacheMiddleware } = require('./util/cache-middleware');
 
 const router = express.Router();
-
-router.use(function (req, res, next) {
-  console.log(Date.now());
-  next();
-});
 
 const allowedFromNetworks = [
   'rsk-mainnet',
@@ -105,7 +100,7 @@ router.get('/rsk-address-report/protocol-usage', async (req, res) => {
     const addressReport = await getAddressReport(address, months);
     res.status(200).json({
       endPointVersion: 4,
-      ...addressReport
+      ...addressReport,
     });
   } catch (error) {
     res.status(400).json({
@@ -115,48 +110,6 @@ router.get('/rsk-address-report/protocol-usage', async (req, res) => {
   }
 });
 
-router.get('/rsk-activity-report/all-activity', async (req, res) => {
-  try {
-    const { days, chain } = req.query;
-    const allActivityReport = await rskActivityReport
-      .queryAllActivity(days, chain);
-    res.status(200).json({
-      endPointVersion: 2,
-      ...allActivityReport
-    });
-  } catch (error) {
-    res.status(400).json({
-      endPointVersion: 2,
-      error: error.message,
-    });
-  }
-});
-
-router.get('/rsk-activity-report/developer-activity', async (req, res) => {
-  const endPointVersion = 3;
-  try {
-    const { chain, windows } = req.query;
-    const startDate = req.query['start-date'];
-    const endDate = req.query['end-date'];
-
-    const activityReport = await rskActivityReport
-      .queryDeveloperActivity(
-        startDate,
-        endDate,
-        chain,
-        windows,
-      );
-    res.status(200).json({
-      endPointVersion,
-      ...activityReport
-    });
-  } catch (error) {
-    res.status(400).json({
-      endPointVersion,
-      error: error.message,
-    });
-  }
-});
-
+router.use('/rsk-activity-report', cacheMiddleware);
 
 module.exports = router;
