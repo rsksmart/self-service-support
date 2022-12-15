@@ -10,7 +10,8 @@
     "prod": "NODE_ENV=production pm2 start run.js",
     "test-unit": "node test/all.unit.test.js",
     "test-e2e": "node test/all.e2e.test.js",
-    "test": "npm run test-unit"
+    "test": "npm run test-unit",
+    "build": "npm install --prefix qrcode-generator && npm run build --prefix qrcode-generator"
   },
   "engines": {
     "node": ">=14 <=16"
