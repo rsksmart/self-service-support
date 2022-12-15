@@ -10,7 +10,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "BUILD_PATH='../static/qrcode' react-scripts build",
+    "build": "npm install && BUILD_PATH='../static/qrcode' react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
