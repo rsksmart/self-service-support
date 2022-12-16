@@ -1,0 +1,39 @@
+.App {
+  text-align: center;
+}
+.button {
+  cursor: pointer;
+}
+.container {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.title {
+  margin-bottom: 0;
+}
+.rskImage {
+  width: 100px;
+  height: 100px;
+}
+.error {
+  color: red;
+  font-size: 1.5rem;
+}
+.numberInput {
+  width: 3rem;
+}
+.sourceInput {
+  width: 50vw;
+}
+.iconsContainer {
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 1.5rem;
+}
+.icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}

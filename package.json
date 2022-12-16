@@ -10,7 +10,8 @@
     "prod": "NODE_ENV=production pm2 start run.js",
     "test-unit": "node test/all.unit.test.js",
     "test-e2e": "node test/all.e2e.test.js",
-    "test": "npm run test-unit"
+    "test": "npm run test-unit",
+    "build": "npm run build --prefix qrcode-generator"
   },
   "engines": {
     "node": ">=14 <=16"
@@ -41,11 +42,6 @@
     "pg-format": "1.0.4"
   },
   "devDependencies": {
-    "eslint": "^8.28.0",
-    "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-prettier": "^4.2.1",
     "morgan": "^1.10.0",
     "prettier": "^2.8.0",
     "supertest": "6.1.3",

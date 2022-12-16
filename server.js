@@ -5,9 +5,11 @@ const cors = require('cors');
 const morgan = require('morgan');
 
 const apiRouter = require('./api-router.js');
+const staticRouter = require('./static-router.js');
 
 const server = express();
 
+// CORS settings
 let corsOptions;
 const permissiveCors = process.env.PERMISSIVE_CORS;
 if (permissiveCors) {
@@ -21,9 +23,9 @@ if (permissiveCors) {
     optionsSuccessStatus: 200,
   };
 }
-
 server.use(cors(corsOptions));
 
+// logger middleware
 if (process.env.NODE_ENV != 'production') {
   server.use(morgan('dev'));
 }
@@ -33,14 +35,17 @@ server.all('/', (req, res) => {
   res.status(302).redirect('https://developers.rsk.co/');
 });
 
+// health check
 server.get('/api/status', (req, res) => {
   res.send({
     ok: Date.now(),
   });
 });
 
+// api router
 server.use('/api/v1', apiRouter);
 
-server.use(express.static(__dirname + '/static'));
+// static directories
+server.use(staticRouter);
 
 module.exports = server;
