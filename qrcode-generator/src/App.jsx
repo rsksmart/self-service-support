@@ -30,9 +30,11 @@ function App() {
       <h1 className={styles.title}>Generate QR-codes with IOVLabs logos</h1>
       <QrInputFields setOptions={setOptions} />
       <div ref={qrRef} />
-      <button type="button" onClick={downloadImage}>
-        Download PNG
-      </button>
+      {options.data && (
+        <button type="button" onClick={downloadImage}>
+          Download PNG
+        </button>
+      )}
       <div>
         <p>
           Brought to you with ❤️ by the Developer Experience team @ IOV Labs!

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import graphics from './graphics';
 import styles from './App.module.css';
 
@@ -16,37 +16,48 @@ const QrInputFields = ({ setOptions }) => {
   const [hasLogo, setHasLogo] = useState(true);
   const [isStyled, setIsStyled] = useState(true);
 
-  const [validationRequest, setValidationRequest] = useState(0);
-  const [validationApprove, setValidationApprove] = useState(0);
+  const validateQrSize = () => {
+    setQrSize((current) => {
+      if (current <= MIN_QR_SIZE) {
+        return MIN_QR_SIZE;
+      } else if (current >= MAX_QR_SIZE) {
+        return MAX_QR_SIZE;
+      }
+      return current;
+    });
+  };
 
-  // validate input fields
-  useEffect(() => {
-    setQrSize((current) =>
-      current <= MIN_QR_SIZE
-        ? MIN_QR_SIZE
-        : current >= MAX_QR_SIZE
-        ? MAX_QR_SIZE
-        : current,
-    );
-    setImageSize((current) =>
-      current <= MIN_IMG_SIZE
-        ? MIN_IMG_SIZE
-        : current >= MAX_IMG_SIZE
-        ? MAX_IMG_SIZE
-        : current,
-    );
-    setQrSource((c) =>
-      c === undefined || c === '' || c.length > 3500
-        ? graphics[currentLogo].url
-        : c,
-    );
-    setValidationApprove((v) => v + 1);
-  }, [validationRequest, currentLogo, hasLogo, isStyled]);
+  const validateImageSize = () => {
+    setImageSize((current) => {
+      if (current <= MIN_IMG_SIZE) {
+        return MIN_IMG_SIZE;
+      } else if (current >= MAX_IMG_SIZE) {
+        return MAX_IMG_SIZE;
+      }
+      return current;
+    });
+  };
 
-  // update QRCodeStyling options
-  useEffect(() => {
+  const validateQrSource = () => {
+    setQrSource((current) => {
+      const trimmedText = String(current).trim();
+      if (!trimmedText || trimmedText.length > 3500)
+        return graphics[currentLogo].url;
+      return trimmedText;
+    });
+  };
+
+  // validate all input fields and update qrcode
+  const validate = () => {
+    validateQrSize();
+    validateImageSize();
+    validateQrSource();
+    updateOptions();
+  };
+
+  const updateOptions = () => {
     const logo = graphics[currentLogo];
-    setOptions({
+    const newOptions = {
       width: qrSize,
       height: qrSize,
       type: 'svg',
@@ -63,20 +74,15 @@ const QrInputFields = ({ setOptions }) => {
       cornersDotOptions: {
         color: isStyled && logo.colors.bright,
       },
-    });
-  }, [validationApprove]);
-
-  const handleEnter = (e) => {
-    if (e.key === 'Enter') {
-      setValidationRequest((v) => v + 1);
-    }
+    };
+    setOptions(newOptions);
   };
 
   return (
     <>
       <div className={styles.iconsContainer}>
         {graphics.map((logo, i) => (
-          <div className={styles.icon} key={logo.name}>
+          <label className={styles.icon} key={logo.name}>
             <img
               src={`${process.env.PUBLIC_URL}/images/${logo.image}`}
               className={styles.rskImage}
@@ -85,11 +91,10 @@ const QrInputFields = ({ setOptions }) => {
             <input
               checked={i === currentLogo}
               type="radio"
-              name="logo"
               value={i}
               onChange={(e) => setCurrentLogo(Number(e.target.value))}
             />
-          </div>
+          </label>
         ))}
       </div>
       <label htmlFor="qr-source">
@@ -100,7 +105,7 @@ const QrInputFields = ({ setOptions }) => {
           value={qrSource}
           onChange={(e) => setQrSource(e.target.value)}
           className={styles.sourceInput}
-          onKeyPress={handleEnter}
+          onKeyDown={(e) => e.key === 'Enter' && validateQrSource()}
         />
       </label>
       <label htmlFor="place-logo">
@@ -110,7 +115,6 @@ const QrInputFields = ({ setOptions }) => {
           id="place-logo"
           checked={hasLogo}
           onChange={(e) => setHasLogo(e.target.checked)}
-          onKeyPress={handleEnter}
         />
       </label>
       <label htmlFor="is-styled">
@@ -120,7 +124,6 @@ const QrInputFields = ({ setOptions }) => {
           id="is-styled"
           checked={isStyled}
           onChange={(e) => setIsStyled(e.target.checked)}
-          onKeyPress={handleEnter}
         />
       </label>
       <label htmlFor="qr-size">
@@ -134,7 +137,7 @@ const QrInputFields = ({ setOptions }) => {
           value={qrSize}
           onChange={(e) => setQrSize(e.target.value)}
           className={styles.numberInput}
-          onKeyPress={handleEnter}
+          onKeyDown={(e) => e.key === 'Enter' && validateQrSize()}
         />
       </label>
       <label htmlFor="image-size">
@@ -148,13 +151,13 @@ const QrInputFields = ({ setOptions }) => {
           value={imageSize}
           onChange={(e) => setImageSize(e.target.value)}
           className={styles.numberInput}
-          onKeyPress={handleEnter}
+          onKeyDown={(e) => e.key === 'Enter' && validateImageSize()}
         />
       </label>
       <button
         type="button"
-        onClick={() => setValidationRequest((v) => v + 1)}
-        onKeyPress={handleEnter}
+        onClick={validate}
+        onKeyDown={(e) => e.key === 'Enter' && validate()}
       >
         Update QR code
       </button>
