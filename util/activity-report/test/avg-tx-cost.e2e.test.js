@@ -17,7 +17,7 @@ test('Average tx cost. The first request should return {} in res.body', async (a
   assert.end();
 });
 
-test('Average tx cost. The second request should return a DB data', async (assert) => {
+test('Average tx cost. The second request should return the DB data', async (assert) => {
   // need to wait a few seconds before sending the second request because
   // a remote database query needs some time to be handled and cached
   await wait(2000);
@@ -41,7 +41,7 @@ test('Average tx cost. The second request should return a DB data', async (asser
     "chain": "rsk_mainnet",
     "avg_tx_cost_rbtc": 0.000007949425969698243,
     "avg_tx_cost_usd": 0.13288735826620565
-}
+  }
 
   I need to verify that:
 */
