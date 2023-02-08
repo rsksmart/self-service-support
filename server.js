@@ -26,6 +26,9 @@ if (permissiveCors) {
       /\.rootstock\.io$/,
       'https://rifos.org',
       /\.rifos\.org$/,
+      // temporary ones below, currently used in staging environments
+      'https://gatsby-rsk-git-feature-stats-api-zgraya.vercel.app',
+      'https://gatsby-rsk-git-wp-zgraya.vercel.app',
     ],
     optionsSuccessStatus: 200,
   };
