@@ -19,7 +19,14 @@ if (permissiveCors) {
   };
 } else {
   corsOptions = {
-    origin: ['https://rsk.co', /\.rsk\.co$/],
+    origin: [
+      'https://rsk.co',
+      /\.rsk\.co$/,
+      'https://rootstock.io',
+      /\.rootstock\.io$/,
+      'https://rifos.org',
+      /\.rifos\.org$/,
+    ],
     optionsSuccessStatus: 200,
   };
 }
